@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# Editor / OS cruft
+*~
+.vscode/
+Thumbs.db
+
+# Local build/tmp (none needed for this static site)
+node_modules/
+dist/

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Pixelate Image Online — Free, Private, In-Browser | PixelTools</title>
+    <meta
+      name="description"
+      content="Pixelate any image or photo in your browser. Blur out faces automatically, hide license plates and personal info. Free, no upload, no sign-up — your image never leaves your device."
+    />
+    <link rel="canonical" href="https://pixelate-tool.pages.dev/" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Pixelate Image Online — Free & Private" />
+    <meta
+      property="og:description"
+      content="Pixelate images and auto-blur faces right in your browser. No upload, no watermark, no sign-up."
+    />
+    <meta property="og:url" content="https://pixelate-tool.pages.dev/" />
+    <meta property="og:image" content="https://pixelate-tool.pages.dev/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- FAQ structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can a pixelated image be reversed or unblurred?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Pixelation replaces the original pixels in a block with a single averaged color, permanently destroying the detail. Once you download the pixelated image, the covered information cannot be recovered from that file."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my image uploaded to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All processing happens locally in your browser using the HTML Canvas API. Your image never leaves your device, so there is nothing for us to store or see."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this pixelate tool free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, completely free with no sign-up, no watermark, and no limits on how many images you can pixelate."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What image formats are supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can load PNG, JPEG, and WebP images, and export your result as PNG, JPEG, or WebP at the original resolution."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between pixelate and blur?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Blurring smoothly smears pixels together, while pixelation replaces areas with large solid blocks (a mosaic). Pixelation is generally harder to reverse and is the standard choice for hiding faces, license plates, and sensitive text."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Analytics (cookie-less). Uncomment ONE and set the ID in js/config.js docs. -->
+    <!-- Cloudflare Web Analytics:
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "REPLACE_WITH_CF_TOKEN"}'></script> -->
+    <!-- Plausible:
+    <script defer data-domain="REPLACE_WITH_PLAUSIBLE_DOMAIN"
+      src="https://plausible.io/js/script.js"></script> -->
+
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span data-site-name>PixelTools</span>
+        </a>
+        <span class="privacy-pill">🔒 Your image never leaves your device</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- ================= TOOL ================= -->
+      <section class="hero wrap">
+        <h1>Pixelate an image online</h1>
+        <p class="sub">
+          Drop a photo, drag to select an area (or auto-blur every face), and
+          download — all in your browser. No upload, no sign-up, no watermark.
+        </p>
+
+        <div id="tool" class="tool">
+          <!-- Empty state / input -->
+          <div id="dropzone" class="dropzone" tabindex="0" role="button"
+               aria-label="Add an image: click to browse, drag and drop, or paste">
+            <div class="dz-inner">
+              <div class="dz-icon" aria-hidden="true">🖼️</div>
+              <p class="dz-title">Drop an image here</p>
+              <p class="dz-or">
+                or <span class="dz-link">browse files</span> · paste with
+                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>V</kbd>
+              </p>
+              <p class="dz-note">PNG · JPEG · WebP</p>
+            </div>
+            <input id="fileInput" type="file" accept="image/*" hidden />
+          </div>
+
+          <!-- Canvas stage -->
+          <div id="stage" class="stage" hidden>
+            <div class="canvas-holder">
+              <canvas id="canvas"></canvas>
+              <canvas id="overlay" class="overlay"></canvas>
+            </div>
+            <p id="regionHint" class="region-hint" hidden>
+              Drag on the image to select an area to pixelate. You can add
+              several boxes.
+            </p>
+          </div>
+
+          <!-- Controls -->
+          <div id="controls" class="controls" hidden>
+            <div class="control-row">
+              <label class="slider-label" for="blockSlider">
+                Block size <output id="blockValue">12</output>
+              </label>
+              <input id="blockSlider" type="range" min="2" max="100" value="12" />
+            </div>
+
+            <div class="control-row modes" role="group" aria-label="Pixelate area">
+              <button id="modeWhole" class="seg active" aria-pressed="true">
+                Whole image
+              </button>
+              <button id="modeRegions" class="seg" aria-pressed="false">
+                Select area
+              </button>
+              <button id="faceBtn" class="btn-face">✨ Auto-blur faces</button>
+              <button id="clearBtn" class="btn-ghost">Clear</button>
+            </div>
+
+            <div class="control-row download-row">
+              <label class="fmt-label" for="formatSelect">Format</label>
+              <select id="formatSelect">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="webp">WebP</option>
+              </select>
+              <button id="downloadBtn" class="btn-primary">Download</button>
+              <button id="resetBtn" class="btn-ghost">New image</button>
+            </div>
+          </div>
+
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- ================= LP CONTENT ================= -->
+      <section class="content wrap">
+        <h2>How to pixelate an image</h2>
+        <ol class="steps">
+          <li>
+            <strong>Add your image.</strong> Drag &amp; drop it onto the tool,
+            click to browse, or paste from your clipboard. It loads instantly and
+            never uploads anywhere.
+          </li>
+          <li>
+            <strong>Choose what to pixelate.</strong> Keep “Whole image”, or
+            switch to “Select area” and drag boxes over the parts you want to
+            hide. Need to cover people? Hit <em>Auto-blur faces</em>.
+          </li>
+          <li>
+            <strong>Adjust the block size.</strong> Slide to make the mosaic
+            coarser or finer. The preview updates in real time.
+          </li>
+          <li>
+            <strong>Download.</strong> Pick PNG, JPEG, or WebP and save the result
+            at full original resolution — no watermark, no limits.
+          </li>
+        </ol>
+
+        <h2>What people use it for</h2>
+        <ul class="cases">
+          <li><strong>Hide faces</strong> in group photos before posting them publicly.</li>
+          <li><strong>Blur license plates</strong> when selling a car or sharing street photos.</li>
+          <li>
+            <strong>Redact screenshots</strong> — cover names, emails, addresses,
+            and other personal info before sharing bug reports or receipts.
+          </li>
+          <li><strong>Pixel-art look</strong> — crank the block size for a retro, low-res style.</li>
+        </ul>
+
+        <h2>Frequently asked questions</h2>
+        <div class="faq">
+          <details>
+            <summary>Can a pixelated image be reversed or unblurred?</summary>
+            <p>
+              No. Pixelation replaces every block of pixels with a single
+              averaged color, permanently destroying the underlying detail. Once
+              you download the file, the covered information can’t be recovered
+              from it.
+            </p>
+          </details>
+          <details>
+            <summary>Is my image uploaded to a server?</summary>
+            <p>
+              No. Everything runs locally in your browser with the HTML Canvas
+              API. Your image never leaves your device — you can even confirm it
+              in your browser’s DevTools Network tab.
+            </p>
+          </details>
+          <details>
+            <summary>Is this tool free?</summary>
+            <p>Yes — completely free, no sign-up, no watermark, and no limits.</p>
+          </details>
+          <details>
+            <summary>What image formats are supported?</summary>
+            <p>
+              Load PNG, JPEG, or WebP images, and export as PNG, JPEG, or WebP at
+              the original resolution.
+            </p>
+          </details>
+          <details>
+            <summary>What’s the difference between pixelate and blur?</summary>
+            <p>
+              Blur smoothly smears pixels together; pixelation replaces areas with
+              large solid blocks (a mosaic). Pixelation is generally harder to
+              reverse, which is why it’s the go-to for hiding faces, plates, and
+              sensitive text.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          <span data-site-name>PixelTools</span> · Runs entirely in your browser.
+          Your images are never uploaded.
+        </p>
+      </div>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
