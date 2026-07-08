@@ -88,7 +88,7 @@ python3 -m http.server 4173
 - [x] Cloudflare Pagesデプロイ(push→自動デプロイ稼働中)
 - [x] ドメイン接続(imagespell.com / www、SSL有効)
 - [ ] アナリティクスID設定
-- [ ] Search Console登録
+- [x] Search Console登録(imagespell.com ドメインプロパティ / DNS認証済み)
 - [ ] 公開告知(X英語 "Day 1")
 
 公開日:
