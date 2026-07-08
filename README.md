@@ -75,12 +75,7 @@ python3 -m http.server 4173
 - [x] 誰でもアクセス可(https://imagespell.com/pixelate-image)
 
 ## 公開後に依頼者がやること
-1. **アナリティクスID差し替え:** `js/config.js` を編集し、`index.html` の
-   `<head>` 内アナリティクススニペット(Cloudflare か Plausible のどちらか)の
-   コメントを外して ID/ドメインを設定。
-2. **OGP画像:** 1200×630 の `og-image.png` をルートに配置。
-3. ドメイン取得・接続 → Google Search Console 登録・`sitemap.xml` 送信。
-4. 公開告知(X英語アカウント "Day 1" 投稿)。
+1. 公開告知(X英語アカウント "Day 1" 投稿)。※他は下記のとおり対応済み。
 
 ## 状態
 - [x] 実装
@@ -88,7 +83,8 @@ python3 -m http.server 4173
 - [x] Cloudflare Pagesデプロイ(push→自動デプロイ稼働中)
 - [x] ドメイン接続(imagespell.com / www、SSL有効)
 - [x] アナリティクス(Cloudflare Web Analytics・自動有効化。コード側スニペット/IDは未使用)
-- [x] Search Console登録(imagespell.com ドメインプロパティ / DNS認証済み)
+- [x] Search Console登録(imagespell.com ドメインプロパティ / DNS認証済み・sitemap送信済み)
+- [x] OGP画像(og-image.png 1200×630 配置・両ページで参照)
 - [ ] 公開告知(X英語 "Day 1")
 
 公開日:
