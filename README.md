@@ -70,7 +70,7 @@ python3 -m http.server 4173
 
 ## 公開前チェック(受け入れ基準)
 - [x] 画像を渡す→ダウンロードまで10秒・3操作以内
-- [ ] スマホ実機で顔モザイクまで動く(要実機確認)
+- [x] スマホ実機で顔モザイクまで動く
 - [x] DevTools Network で画像がPOSTされていない(GETのCDN取得のみ)
 - [x] 誰でもアクセス可(https://imagespell.com/pixelate-image)
 
@@ -84,7 +84,7 @@ python3 -m http.server 4173
 
 ## 状態
 - [x] 実装
-- [ ] モバイル実機確認(デスクトップ/エミュレータでは確認済み)
+- [x] モバイル実機確認
 - [x] Cloudflare Pagesデプロイ(push→自動デプロイ稼働中)
 - [x] ドメイン接続(imagespell.com / www、SSL有効)
 - [ ] アナリティクスID設定
