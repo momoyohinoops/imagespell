@@ -14,7 +14,7 @@
 ## 構成(傘構造 ImageSpell)
 ```
 index.html                  ルート = ImageSpell ホーム(サイト名 + ツール一覧)
-pixelate-image/index.html   ツール本体 + LP(/pixelate-image で配信)
+pixelate-image.html         ツール本体 + LP(/pixelate-image で 200 配信・末尾スラッシュなし)
 css/styles.css              スタイル(ホーム/ツール共有・モバイル対応)
 js/config.js                サイト名・URL・アナリティクスIDを1箇所で差し替え ← ここだけ編集
 js/pixelate.js              Canvasピクセル化コア(依存なし)
@@ -25,7 +25,8 @@ robots.txt / sitemap.xml / _headers / _redirects   デプロイ用
 ```
 - 公開URL: ホーム `https://imagespell.com/` / ツール `https://imagespell.com/pixelate-image`
 - CSS/JS はルート絶対パス(`/css` `/js`)参照なので、どの階層のページからも共有される
-- 2本目以降のツールは `tool-name/index.html` を追加し、ホームの `.tool-grid` にカードを1枚足すだけ
+- 2本目以降のツールは `tool-name.html` を追加し、ホームの `.tool-grid` にカードを1枚足すだけ
+  (単一 `.html` にすると Cloudflare Pages が末尾スラッシュなしの clean URL で 200 配信する)
 
 ## ローカル起動
 ビルド不要。静的サーバーで開くだけ(ESモジュールのため `file://` では不可)。
