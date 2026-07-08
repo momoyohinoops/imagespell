@@ -74,9 +74,6 @@ python3 -m http.server 4173
 - [x] DevTools Network で画像がPOSTされていない(GETのCDN取得のみ)
 - [x] 誰でもアクセス可(https://imagespell.com/pixelate-image)
 
-## 公開後に依頼者がやること
-1. 公開告知(X英語アカウント "Day 1" 投稿)。※他は下記のとおり対応済み。
-
 ## 状態
 - [x] 実装
 - [x] モバイル実機確認
@@ -85,9 +82,9 @@ python3 -m http.server 4173
 - [x] アナリティクス(Cloudflare Web Analytics・自動有効化。コード側スニペット/IDは未使用)
 - [x] Search Console登録(imagespell.com ドメインプロパティ / DNS認証済み・sitemap送信済み)
 - [x] OGP画像(og-image.png 1200×630 配置・両ページで参照)
-- [ ] 公開告知(X英語 "Day 1")
+- [x] 公開告知(X英語 "Day 1")
 
-公開日:
+公開日: 2026-07-08
 30日クイットメトリクス判定日: 2026-08-06
 
 ## 判定基準(30日クイットメトリクス)
