@@ -1,0 +1,12 @@
+# Cloudflare Pages _redirects
+#
+# NOTE: Cloudflare Pages _redirects matches by PATH only — it cannot match on
+# hostname. A catch-all like `/*  https://imagespell.com/:splat  301` would also
+# fire on imagespell.com itself (same Pages project) and cause an infinite loop.
+#
+# Therefore the pixelate-tool.pages.dev -> imagespell.com canonical redirect is
+# configured as a dashboard **Redirect Rule** (Rules > Redirect Rules) scoped to
+#   Hostname equals pixelate-tool.pages.dev
+# and NOT here. See README "独自ドメイン接続" for the exact steps.
+#
+# Path-level redirects (same host) can safely go below this line if ever needed.

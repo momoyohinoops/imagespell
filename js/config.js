@@ -2,9 +2,11 @@
 // Site configuration — change these in ONE place when the domain is decided.
 // ---------------------------------------------------------------------------
 export const SITE = {
-  name: "PixelTools",
+  name: "ImageSpell",
   // Public URL of the deployed site (used for OGP / canonical). No trailing slash.
-  url: "https://pixelate-tool.pages.dev",
+  url: "https://imagespell.com",
+  // Path of the pixelate tool under the umbrella site.
+  pixelatePath: "/pixelate-image",
   // OGP share image (relative to site root). Provide a real 1200x630 later.
   ogImage: "/og-image.png",
   // Twitter/X handle for the card (optional, include the @).

@@ -278,6 +278,55 @@ kbd {
 .faq p { margin: 0 0 12px; color: #374151; }
 
 /* ------------------------------------------------------------------ */
+/* Home (umbrella) page                                                 */
+/* ------------------------------------------------------------------ */
+.home-hero { padding: 40px 16px 8px; }
+.tools-heading { font-size: 1.15rem; margin: 20px 0 12px; color: var(--muted); }
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding-bottom: 8px;
+}
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+a.tool-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand);
+}
+.tool-emoji {
+  font-size: 1.8rem;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eef2ff;
+  flex: none;
+}
+.tool-body { display: flex; flex-direction: column; gap: 3px; }
+.tool-name { font-weight: 700; font-size: 1.05rem; }
+.tool-desc { color: var(--muted); font-size: 0.9rem; }
+.tool-arrow { margin-left: auto; color: var(--brand); font-size: 1.3rem; }
+.tool-card.is-soon {
+  opacity: 0.6;
+  box-shadow: none;
+  border-style: dashed;
+  cursor: default;
+}
+
+/* ------------------------------------------------------------------ */
 /* Mobile                                                               */
 /* ------------------------------------------------------------------ */
 @media (max-width: 560px) {

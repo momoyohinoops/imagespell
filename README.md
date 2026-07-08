@@ -11,17 +11,21 @@
 - PNG / JPEG / WebP で元解像度のままダウンロード(透かし・制限なし)
 - 画像は一切アップロードされない(すべてローカル処理)
 
-## 構成
+## 構成(傘構造 ImageSpell)
 ```
-index.html          ツール本体 + LP(How-to / ユースケース / FAQ)+ SEO(meta/OGP/JSON-LD)
-css/styles.css      スタイル(モバイル対応)
-js/config.js        サイト名・URL・アナリティクスIDを1箇所で差し替え ← ここだけ編集
-js/pixelate.js      Canvasピクセル化コア(依存なし)
-js/app.js           UI/入力/選択/ダウンロード制御
-js/faces.js         顔検出(遅延ロード。MediaPipe CDN)
-js/analytics.js     Cookieレス計測の薄いラッパー
-robots.txt / sitemap.xml / _headers   デプロイ用
+index.html                  ルート = ImageSpell ホーム(サイト名 + ツール一覧)
+pixelate-image/index.html   ツール本体 + LP(/pixelate-image で配信)
+css/styles.css              スタイル(ホーム/ツール共有・モバイル対応)
+js/config.js                サイト名・URL・アナリティクスIDを1箇所で差し替え ← ここだけ編集
+js/pixelate.js              Canvasピクセル化コア(依存なし)
+js/app.js                   UI/入力/選択/ダウンロード制御
+js/faces.js                 顔検出(遅延ロード。MediaPipe CDN)
+js/analytics.js             Cookieレス計測の薄いラッパー
+robots.txt / sitemap.xml / _headers / _redirects   デプロイ用
 ```
+- 公開URL: ホーム `https://imagespell.com/` / ツール `https://imagespell.com/pixelate-image`
+- CSS/JS はルート絶対パス(`/css` `/js`)参照なので、どの階層のページからも共有される
+- 2本目以降のツールは `tool-name/index.html` を追加し、ホームの `.tool-grid` にカードを1枚足すだけ
 
 ## ローカル起動
 ビルド不要。静的サーバーで開くだけ(ESモジュールのため `file://` では不可)。
@@ -43,10 +47,24 @@ python3 -m http.server 4173
    - **Build output directory:** `/`(リポジトリのルート)
 4. Deploy → `https://<project>.pages.dev` で公開。以降 push で自動デプロイ。
 
-## 独自ドメイン接続(後日 / 依頼者タスク)
-Pages プロジェクト → **Custom domains → Set up a domain** → ドメインを入力し、
-表示される CNAME を DNS に設定(Cloudflare 管理下なら自動)。反映後 `js/config.js` と
-`index.html` 内の URL(canonical / OGP)、`robots.txt`、`sitemap.xml` を新ドメインに更新。
+## 独自ドメイン接続(imagespell.com)
+1. Pages プロジェクト → **Custom domains → Set up a domain** → `imagespell.com`(と
+   `www.imagespell.com`)を追加。ドメインが Cloudflare 管理下なら DNS は自動設定。
+   外部レジストラなら表示される CNAME を DNS に登録。
+2. URL 類はすでに imagespell.com に更新済み(`js/config.js` / 各 `index.html` の
+   canonical・OGP / `robots.txt` / `sitemap.xml`)。
+
+### pages.dev → imagespell.com の 301(SEO重複回避)
+Cloudflare Pages の `_redirects` は**パス単位のみ**でホスト名を判定できず、catch-all は
+imagespell.com 自身にも当たってループする。よってこのリダイレクトは **Redirect Rules** で行う:
+
+**imagespell.com のゾーン → Rules → Redirect Rules → Create rule**
+- **When incoming requests match:** `Hostname` `equals` `pixelate-tool.pages.dev`
+- **Then / URL redirect:**
+  - Type: **Dynamic**
+  - Expression: `concat("https://imagespell.com", http.request.uri.path)`
+  - Status: **301**、**Preserve query string** ON
+- Deploy。以降 pages.dev へのアクセスは同じパスで imagespell.com へ 301。
 
 ## 公開前チェック(受け入れ基準)
 - [ ] 画像を渡す→ダウンロードまで10秒・3操作以内
