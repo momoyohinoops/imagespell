@@ -80,7 +80,7 @@
     </script>
 
     <link rel="stylesheet" href="/css/styles.css?v=2" />
-    <link rel="stylesheet" href="/depth-map-generator/styles.css?v=2" />
+    <link rel="stylesheet" href="/depth-map-generator/styles.css?v=3" />
   </head>
   <body>
     <header class="site-header">
@@ -159,19 +159,19 @@
             <div class="depth-controls">
               <label><input type="checkbox" id="invert" /> Invert (near = black)</label>
               <label>Colormap <select id="colormap"></select></label>
-              <label><input type="checkbox" id="hires" data-pro disabled />
+              <label class="pro-lock"><input type="checkbox" id="hires" data-pro disabled />
                 Original resolution (tiled) <span class="pro-pill">Pro</span></label>
               <span id="resultInfo" class="result-info"></span>
             </div>
 
             <div class="exports">
               <button id="export8" class="btn-primary">Download 8-bit PNG</button>
-              <button id="export16" class="btn" data-pro disabled>Download 16-bit PNG <span class="pro-pill">Pro</span></button>
-              <label class="btn file-btn">
+              <button id="export16" class="btn pro-lock" data-pro disabled>Download 16-bit PNG <span class="pro-pill">Pro</span></button>
+              <label class="btn file-btn pro-lock">
                 Batch → ZIP <span class="pro-pill">Pro</span>
                 <input id="batchInput" type="file" accept="image/*" multiple data-pro disabled />
               </label>
-              <label class="chk"><input type="checkbox" id="batch16" /> 16-bit in batch</label>
+              <label class="chk pro-lock"><input type="checkbox" id="batch16" /> 16-bit in batch</label>
             </div>
           </div>
 

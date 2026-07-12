@@ -172,6 +172,7 @@
   background: linear-gradient(180deg, #ffffff, #f7f9ff);
   box-shadow: var(--shadow);
 }
+.upgrade-card > div { flex: 1 1 320px; min-width: 0; } /* text fills; button stays right */
 .upgrade-card h2 { margin: 0 0 6px; font-size: 1.2rem; }
 .upgrade-card .small { color: var(--muted); font-size: 0.85rem; }
 .btn.big { padding: 12px 22px; font-size: 1rem; }
@@ -224,6 +225,12 @@
 .gallery-grid figcaption { padding: 8px 12px; color: var(--muted); font-size: 0.82rem; }
 
 body.is-pro .btn.is-soon { display: none; }
+
+/* Gray out every Pro-only control until Pro is unlocked, so the locked state is
+   obvious even on <label>-wrapped controls (which can't take :disabled). */
+body:not(.is-pro) .pro-lock { opacity: 0.5; cursor: not-allowed; }
+body:not(.is-pro) label.pro-lock,
+body:not(.is-pro) label.pro-lock input { cursor: not-allowed; }
 
 @media (max-width: 560px) {
   .depth-previews { grid-template-columns: 1fr; }
