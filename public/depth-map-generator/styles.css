@@ -159,7 +159,9 @@
 .chk { color: var(--muted); font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; }
 
 /* Upgrade card + license panel. */
-.upgrade { margin: 30px 0; }
+/* Keep horizontal auto-centering from .wrap (only override vertical margin),
+   so the Pro section lines up with the tool card's container. */
+.upgrade { margin: 30px auto; }
 .upgrade-card {
   display: flex;
   align-items: center;
