@@ -4,8 +4,12 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
 
-# Cache hashed static assets aggressively; HTML stays fresh.
+# CSS/JS are NOT content-hashed and change as tools iterate. Revalidate on each
+# load (cheap 304s) so a freshly-deployed HTML never pairs with a stale, cached
+# stylesheet/script. Images/models are immutable-ish and use the default cache.
 /css/*
-  Cache-Control: public, max-age=86400
-/js/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=0, must-revalidate
+/pixelate-image/js/*
+  Cache-Control: public, max-age=0, must-revalidate
+/depth-map-generator/js/*
+  Cache-Control: public, max-age=0, must-revalidate
