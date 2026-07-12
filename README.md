@@ -1,92 +1,117 @@
-# pixelate-tool (PixelTools)
+# ImageSpell
 
-英語圏向け画像ツールポートフォリオの1本目。「pixelate image」(月間14,800 / KD11)向けの
-**完全ブラウザ内処理**のピクセル化ツール。ビルド不要のバニラJS(ESモジュール)+ Canvas。
+英語圏向けの**完全ブラウザ内**画像ツール群(モノレポ)。1つのサイト `imagespell.com` の下に
+ツールを増やしていく傘構造。ビルド不要のバニラ JS(ES モジュール)+ Canvas / WebGPU。
+Cloudflare Pages でホスティング。
 
-- ドラッグ&ドロップ / ファイル選択 / クリップボード貼り付け(Ctrl/⌘+V)
-- 読み込んだ瞬間に全体ピクセル化プレビュー(操作ゼロで結果)
-- ブロックサイズのスライダー(リアルタイム)
-- 全体 / 矩形選択(複数可)モード
-- **顔の自動モザイク**(MediaPipe Tasks Vision を初回押下時にCDNから遅延ロード)
-- PNG / JPEG / WebP で元解像度のままダウンロード(透かし・制限なし)
-- 画像は一切アップロードされない(すべてローカル処理)
+> このリポジトリは「pixelate 単体」ではなく **imagespell.com サイト全体**。
+> ツールは今後 10 本以上に増える前提で、**1 ツール = 1 ディレクトリ**で並列に並べる。
 
-## 構成(傘構造 ImageSpell)
+## 公開中のツール
+| URL | ディレクトリ | 概要 | 課金 |
+|---|---|---|---|
+| `/pixelate-image/` | `public/pixelate-image/` | 画像のピクセル化・顔の自動モザイク・情報の墨消し | 無料 |
+| `/depth-map-generator/` | `public/depth-map-generator/` | 画像→深度マップ生成(Depth Anything V2 Small)。Proで16-bit/原寸/バッチ | 無料 + Pro $19 買い切り |
+
+## ディレクトリ構成(公開ルート = `public/`)
 ```
-index.html                  ルート = ImageSpell ホーム(サイト名 + ツール一覧)
-pixelate-image.html         ツール本体 + LP(/pixelate-image で 200 配信・末尾スラッシュなし)
-css/styles.css              スタイル(ホーム/ツール共有・モバイル対応)
-js/config.js                サイト名・URL・アナリティクスIDを1箇所で差し替え ← ここだけ編集
-js/pixelate.js              Canvasピクセル化コア(依存なし)
-js/app.js                   UI/入力/選択/ダウンロード制御
-js/faces.js                 顔検出(遅延ロード。MediaPipe CDN)
-js/analytics.js             Cookieレス計測の薄いラッパー
-robots.txt / sitemap.xml / _headers / _redirects   デプロイ用
+public/                         ← Cloudflare Pages の Build output directory
+├── index.html                  ← ホーム(サイト名 + ツール一覧カード)
+├── css/styles.css              ← 全ツール共有のデザインシステム(トークン/ヘッダー/フッター等)
+├── pixelate-image/             ← 1本目
+│   ├── index.html              ← /pixelate-image/ で配信
+│   └── js/                     ← このツール専用 JS(app / pixelate / faces / config / analytics)
+├── depth-map-generator/        ← 2本目(pixelate の“隣”。配下ではない)
+│   ├── index.html              ← /depth-map-generator/ で配信
+│   ├── styles.css              ← depth 専用の補助スタイル(共有CSSの後に読む)
+│   ├── js/                     ← 推論・UI・LS統合(main / depth-engine / tiling / png16 / license 等)
+│   └── assets/                 ← og.jpg・LPサンプル画像
+├── _headers / _redirects / robots.txt / sitemap.xml / og-image.png
+outputs/                        ← 配信対象外の生成物(SNS投稿画像など)
+docs/ · README.md · .gitignore  ← リポジトリ管理物(public 外・非配信)
 ```
-- 公開URL: ホーム `https://imagespell.com/` / ツール `https://imagespell.com/pixelate-image`
-- CSS/JS はルート絶対パス(`/css` `/js`)参照なので、どの階層のページからも共有される
-- 2本目以降のツールは `tool-name.html` を追加し、ホームの `.tool-grid` にカードを1枚足すだけ
-  (単一 `.html` にすると Cloudflare Pages が末尾スラッシュなしの clean URL で 200 配信する)
+
+### 規約: 3本目以降のツールを追加する手順(1ツール = 1ディレクトリ)
+1. `public/<tool-name>/index.html` を作る(URL は `/<tool-name>/`)。
+2. ツール固有の JS/CSS/画像は `public/<tool-name>/` 配下に置く(絶対パス `/<tool-name>/…` で参照)。
+3. **共有デザインは `/css/styles.css`** を読み込む(`<link rel="stylesheet" href="/css/styles.css">`)。
+   ヘッダー/フッターのマークアップは既存ツールからコピーして揃える(フッターの `.footer-nav` に
+   相互リンクを1本追加)。
+4. `public/index.html` の `.tool-grid` にカードを1枚、JSON-LD の `hasPart` に1件追加。
+5. `public/sitemap.xml` に `<url>` を1件追加。各ページの `canonical` は末尾スラッシュ付き
+   (`https://imagespell.com/<tool-name>/`)。
+   - Cloudflare Pages は `foo/index.html` を `/foo/`(末尾スラッシュ)で配信するため、canonical も
+     スラッシュ付きに統一する。
 
 ## ローカル起動
-ビルド不要。静的サーバーで開くだけ(ESモジュールのため `file://` では不可)。
+ビルド不要。`public/` を静的サーバーで開く(ES モジュールのため `file://` 不可)。
 ```bash
-python3 -m http.server 4173
-# → http://localhost:4173
+cd public && python3 -m http.server 4173
+# → http://localhost:4173/                       (ホーム)
+#   http://localhost:4173/pixelate-image/         (1本目)
+#   http://localhost:4173/depth-map-generator/    (2本目)
 ```
 
 ## デプロイ(Cloudflare Pages)
-1. このフォルダをGitリポジトリにして GitHub 等へ push
-   ```bash
-   git init && git add -A && git commit -m "PixelTools v1"
-   git branch -M main && git remote add origin <YOUR_REPO> && git push -u origin main
-   ```
-2. Cloudflare ダッシュボード → **Workers & Pages → Create → Pages → Connect to Git**
-3. ビルド設定:
-   - **Framework preset:** None
-   - **Build command:** (空欄)
-   - **Build output directory:** `/`(リポジトリのルート)
-4. Deploy → `https://<project>.pages.dev` で公開。以降 push で自動デプロイ。
+- Framework preset: **None** / Build command: **(空)** / **Build output directory: `public`**
+- push で自動デプロイ。独自ドメイン `imagespell.com` 接続済み・SSL 有効。
+- ⚠️ **重要**: 公開ルートを `public/` にしたので、Pages の **Build output directory を `/` から
+  `public` へ変更**する必要がある(未変更だと空ルートを配信して全ページ404)。
 
-## 独自ドメイン接続(imagespell.com)
-1. Pages プロジェクト → **Custom domains → Set up a domain** → `imagespell.com`(と
-   `www.imagespell.com`)を追加。ドメインが Cloudflare 管理下なら DNS は自動設定。
-   外部レジストラなら表示される CNAME を DNS に登録。
-2. URL 類はすでに imagespell.com に更新済み(`js/config.js` / 各 `index.html` の
-   canonical・OGP / `robots.txt` / `sitemap.xml`)。
+### pages.dev の重複コンテンツ対策
+各ページの `canonical`(`https://imagespell.com/...`)で対応済み。`_redirects` はパス単位のみで
+ホスト名を判定できないため、`*.pages.dev` → 独自ドメインの 301 はダッシュボードの Redirect Rules
+側の領域(詳細は過去コミット/元の手順を参照)。
 
-### pages.dev の重複コンテンツ対策(canonical で対応済み・301は不可)
-`pixelate-tool.pages.dev` を imagespell.com へ **301 する方法は Cloudflare には無い**:
-- `_redirects` はパス単位のみでホスト名を判定できず、catch-all は imagespell.com 自身にも
-  当たってループする。
-- Redirect Rules は**そのゾーン宛のトラフィックにしか効かない**。pages.dev は Cloudflare 所有の
-  別ゾーンで、こちらからルールを追加できない(「Hostname = *.pages.dev」ルールは発火しない)。
+---
 
-→ 対策は**各ページの canonical タグ**(`https://imagespell.com/...`)で、これは実装・デプロイ済み。
-これで検索エンジンは imagespell.com を正規URLとして扱い、重複インデックスを回避する。追加設定は不要。
+## depth-map-generator について(重要な前提)
 
-(任意)www を apex に寄せたい場合のみ、imagespell.com ゾーンの
-**Rules → Redirect Rules → テンプレート「Redirect from WWW to root」** を使う(これは自ゾーンなので有効)。
+### モデルとライセンス(厳守)
+- 使用モデルは **Depth Anything V2 — Small のみ**
+  (transformers.js 用 ONNX: `onnx-community/depth-anything-v2-small-ONNX`)。
+  ベースモデルは **Apache 2.0(商用可)**。
+- **Base / Large は CC-BY-NC(非商用)のため使用禁止**。変更しないこと。
+- 推論は **WebGPU=fp16 優先、WASM フォールバック**(初期化時にプローブ推論で自動降格)。
+  後処理の品質パラメータは `public/depth-map-generator/js/depth-config.js` に集約(CV研究者はここだけ)。
 
-## 公開前チェック(受け入れ基準)
-- [x] 画像を渡す→ダウンロードまで10秒・3操作以内
-- [x] スマホ実機で顔モザイクまで動く
-- [x] DevTools Network で画像がPOSTされていない(GETのCDN取得のみ)
-- [x] 誰でもアクセス可(https://imagespell.com/pixelate-image)
+### Lemon Squeezy(Pro 課金)
+- Store 428235 / Product 1209872 / **Variant 1891543**($19 買い切り)。
+- 公開設定は `public/depth-map-generator/js/lemonsqueezy.config.js`(**公開IDのみ・APIキー非含**)。
+- **Pro ゲート: `PRO_ENABLED`**(同ファイル)。現在 `false` = 「Pro — coming soon」表示で
+  チェックアウトを開かない。ライセンスキー入力欄は常時有効(先行キーで解錠可能)。
+  **KYC 完了後に `true` に切り替える**(1箇所)。
+- **API キーはこのリポジトリには存在しない/コミットしない。** キーは開発用の別ワーキングコピーの
+  `.env`(git-ignored)にのみ置き、Variant ID 取得等の開発作業だけに使う。ブラウザが叩くのは
+  APIキー不要の公開 License API(activate/validate)のみ。
 
-## 状態
-- [x] 実装
-- [x] モバイル実機確認
-- [x] Cloudflare Pagesデプロイ(push→自動デプロイ稼働中)
-- [x] ドメイン接続(imagespell.com / www、SSL有効)
-- [x] アナリティクス(Cloudflare Web Analytics・自動有効化。コード側スニペット/IDは未使用)
-- [x] Search Console登録(imagespell.com ドメインプロパティ / DNS認証済み・sitemap送信済み)
-- [x] OGP画像(og-image.png 1200×630 配置・両ページで参照)
-- [x] 公開告知(X英語 "Day 1")
+---
 
-公開日: 2026-07-08
-30日クイットメトリクス判定日: 2026-08-06
+## 公開前・公開後チェックリスト
 
-## 判定基準(30日クイットメトリクス)
-判定日 **8/6**。合格=**インデックス済み** かつ(**インプレッション累計 100+** or **クリック 5+**)。
-不合格なら本ページへの追加投資を停止し、2本目以降に全振り。
+### pixelate-image(公開済み: 2026-07-08 / 30日判定日: 2026-08-06)
+- [x] 実装・モバイル実機・デプロイ・ドメイン・アナリティクス・Search Console・OGP・Day 1 告知
+- 判定基準(8/6): インデックス済み かつ(インプレッション累計 100+ or クリック 5+)
+
+### depth-map-generator(公開準備)
+- [x] 実装(コア/表示オプション/Pro:16-bit・タイル・バッチ/LS統合/LP/モバイル)
+- [x] 技術検証(2048px 中央値 2.4 秒 @ WebGPU fp16・内蔵GPU)
+- [x] 傘サイトへ統合(1ツール1ディレクトリ・相互リンク・sitemap・JSON-LD・OGP)
+- [x] LP サンプル画像 / og.jpg(1200×630 左右分割)/ X用 16:9 を生成
+- [ ] **Cloudflare Pages の Build output directory を `public` に変更**(このPR構成の前提)
+- [ ] 公開(main マージ → push → 自動デプロイ)
+- [ ] 公開URL 確認: https://imagespell.com/depth-map-generator/
+- [ ] **公開日を記入: __________**（30日判定日: 公開日 + 29日 = __________）
+- [ ] Lemon Squeezy KYC 完了 → `PRO_ENABLED=true` に切替 → テストモードで
+      購入→キー→解錠の **E2E 確認**
+- [ ] LS 製品ギャラリーの仮アイコンを、実写ベースのビフォー/アフター製品画像へ差し替え
+- [ ] X(@imagespell)で **"Day N"** 出荷投稿(16:9 は `outputs/` に生成済み)
+- [ ] (任意)実 Chrome での WASM フォールバック疎通確認
+
+#### 判定基準(30日クイットメトリクス)
+判定日 = 公開日 + 29日。合格 = **インデックス済み** かつ(**インプレッション累計 100+** or
+**クリック 5+**)。Pro は KYC 後に有効化するため、初期は無料機能の集客力で判定する。
+
+## リポジトリ名について
+このリポジトリの実体は imagespell サイト全体。GitHub 上の名称は運用に合わせて
+`imagespell` 等へリネーム予定(リネーム後も Cloudflare Pages の Git 連携は維持される想定)。

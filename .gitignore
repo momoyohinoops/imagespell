@@ -9,3 +9,8 @@ Thumbs.db
 # Local build/tmp (none needed for this static site)
 node_modules/
 dist/
+
+# Secrets — never commit (depth tool dev-time Lemon Squeezy key lives elsewhere)
+.env
+.env.local
+.env.*.local

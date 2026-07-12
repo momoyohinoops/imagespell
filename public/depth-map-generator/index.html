@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Depth Map Generator — Free, In-Browser, 16-bit Export | ImageSpell</title>
+    <meta
+      name="description"
+      content="Turn any image into a depth map, free and 100% in your browser — nothing is uploaded. Powered by Depth Anything V2. Grayscale and color output, with Pro 16-bit PNG for ControlNet, Blender displacement, and 2.5D parallax."
+    />
+    <link rel="canonical" href="https://imagespell.com/depth-map-generator/" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Depth Map Generator — Free, In-Browser, 16-bit Export" />
+    <meta
+      property="og:description"
+      content="Turn any image into a depth map in your browser. No upload. Pro 16-bit PNG for ControlNet, Blender displacement, and 2.5D parallax."
+    />
+    <meta property="og:url" content="https://imagespell.com/depth-map-generator/" />
+    <meta property="og:image" content="https://imagespell.com/depth-map-generator/assets/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "ImageSpell Depth Map Generator",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any (web browser; WebGPU recommended)",
+        "url": "https://imagespell.com/depth-map-generator/",
+        "description": "Free in-browser depth map generator using Depth Anything V2 Small, with Pro 16-bit PNG export, original-resolution tiled processing, and batch export.",
+        "offers": [
+          { "@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "Free" },
+          { "@type": "Offer", "price": "19", "priceCurrency": "USD", "name": "Pro (one-time)" }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How accurate is the depth map?",
+            "acceptedAnswer": { "@type": "Answer", "text": "It uses Depth Anything V2 (Small), a state-of-the-art monocular depth model. Depth is relative, not metric — single-image estimation infers plausible depth from visual cues, so results are excellent for creative and 2.5D work but are not measured distances." }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my images uploaded to a server?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. All inference runs locally in your browser via WebGPU (or a WASM fallback). Only the AI model itself is downloaded once, then cached. Your images never leave your device." }
+          },
+          {
+            "@type": "Question",
+            "name": "What about detail in far or distant areas?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Because this is single-image (monocular) depth estimation, the model is most confident about near and mid-range structure. Far, distant regions get compressed into a narrow range of tones, so fine differences between distant objects can flatten out. That is a fundamental property of monocular depth, not a bug. Pro's original-resolution tiled processing recovers more local detail across the frame, including farther areas." }
+          },
+          {
+            "@type": "Question",
+            "name": "What does 16-bit export mean?",
+            "acceptedAnswer": { "@type": "Answer", "text": "A 16-bit grayscale PNG stores 65,536 depth levels instead of 256, giving smooth gradients with no banding — important for Blender displacement and high-quality compositing. 16-bit export is a Pro feature." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is Pro a one-time purchase?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Pro is a single one-time payment of $19 — no subscription. It unlocks 16-bit export, original-resolution tiled processing, and batch export." }
+          },
+          {
+            "@type": "Question",
+            "name": "Which image formats are supported?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Any image your browser can open — PNG, JPEG, WebP, and more. Drop a file, choose one, or paste from the clipboard." }
+          }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/depth-map-generator/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span data-site-name>ImageSpell</span>
+        </a>
+        <span class="privacy-pill">🔒 Your images never leave your device</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- ================= TOOL ================= -->
+      <section class="hero wrap">
+        <h1>Depth Map Generator</h1>
+        <p class="sub">
+          Turn any image into a depth map — free, right in your browser. Nothing is
+          uploaded. <span class="pro-pill">Pro</span> adds 16-bit PNG, original-resolution
+          processing, and batch.
+        </p>
+
+        <!-- Before / after showcase -->
+        <div class="ba-caption"><span>Original</span><span>Depth map</span></div>
+        <div class="ba-slider" style="--pos:52%">
+          <img class="ba-before" src="/depth-map-generator/assets/tunnel-before.jpg"
+               alt="Original photo of a tunnel receding into the distance" />
+          <div class="ba-after">
+            <img src="/depth-map-generator/assets/tunnel-depth.jpg"
+                 alt="Depth map generated from the tunnel photo" />
+          </div>
+          <input class="ba-range" type="range" min="0" max="100" value="52"
+                 aria-label="Drag to compare the original and the depth map" />
+          <span class="ba-handle" aria-hidden="true"></span>
+        </div>
+
+        <p id="slowNotice" class="notice warn" hidden>
+          ⚠️ WebGPU isn't available in this browser, so processing runs in a slower WASM
+          fallback mode. For best speed use a recent desktop Chrome or Edge.
+        </p>
+
+        <div class="tool">
+          <div id="drop" class="dropzone" tabindex="0" role="button"
+               aria-label="Add an image: click to browse, drag and drop, or paste">
+            <input id="fileInput" type="file" accept="image/*" hidden />
+            <div class="dz-inner">
+              <div class="dz-icon" aria-hidden="true">🗺️</div>
+              <p class="dz-title">Drop an image here</p>
+              <p class="dz-or">
+                or <span class="dz-link">browse files</span> · paste with
+                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>V</kbd>
+              </p>
+              <p class="dz-note">Runs locally · PNG · JPEG · WebP</p>
+            </div>
+          </div>
+
+          <div id="progress" class="progress" hidden style="margin-top:14px">
+            <div class="bar" style="height:8px;background:#eef0f3;border-radius:999px;overflow:hidden">
+              <div id="progressBar" style="height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .2s"></div>
+            </div>
+            <div id="progressText" style="margin-top:6px;font-size:.9rem"></div>
+            <div style="color:var(--muted);font-size:.8rem">First run downloads the AI model (~50&nbsp;MB). It is cached for next time.</div>
+          </div>
+
+          <div id="stage" class="stage" hidden style="margin-top:16px">
+            <div class="depth-previews">
+              <figure><figcaption>Input</figcaption><canvas id="srcCanvas"></canvas></figure>
+              <figure>
+                <figcaption>Depth <span id="backendBadge" class="badge" hidden></span></figcaption>
+                <canvas id="depthCanvas"></canvas>
+              </figure>
+            </div>
+
+            <div class="depth-controls">
+              <label><input type="checkbox" id="invert" /> Invert (near = black)</label>
+              <label>Colormap <select id="colormap"></select></label>
+              <label><input type="checkbox" id="hires" data-pro disabled />
+                Original resolution (tiled) <span class="pro-pill">Pro</span></label>
+              <span id="resultInfo" class="result-info"></span>
+            </div>
+
+            <div class="exports">
+              <button id="export8" class="btn-primary">Download 8-bit PNG</button>
+              <button id="export16" class="btn" data-pro disabled>Download 16-bit PNG <span class="pro-pill">Pro</span></button>
+              <label class="btn file-btn">
+                Batch → ZIP <span class="pro-pill">Pro</span>
+                <input id="batchInput" type="file" accept="image/*" multiple data-pro disabled />
+              </label>
+              <label class="chk"><input type="checkbox" id="batch16" /> 16-bit in batch</label>
+            </div>
+          </div>
+
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- ================= UPGRADE / LICENSE ================= -->
+      <section class="upgrade wrap">
+        <div class="upgrade-card">
+          <div>
+            <h2>ImageSpell Pro <span id="proBadge" class="badge ok" hidden>Unlocked</span></h2>
+            <p><strong>$19 — one-time purchase.</strong> No subscription. Unlocks 16-bit PNG
+              export, original-resolution tiled processing, and batch export.</p>
+            <p class="small">Already purchased? <a href="#" id="hasKeyLink">Enter your license key →</a></p>
+          </div>
+          <button id="upgradeBtn" class="btn-primary big">Upgrade to Pro</button>
+        </div>
+
+        <div id="proPanel" class="pro-panel" hidden>
+          <label for="licenseKey">Paste the license key from your email</label>
+          <div class="key-row">
+            <input id="licenseKey" type="text" inputmode="text" autocomplete="off"
+                   placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" />
+            <button id="activateBtn" class="btn-primary">Unlock</button>
+          </div>
+          <p id="licenseMsg" class="license-msg"></p>
+        </div>
+      </section>
+
+      <!-- ================= LP CONTENT ================= -->
+      <section class="content wrap">
+        <h2>How to make a depth map</h2>
+        <ol class="steps">
+          <li><strong>Add your image.</strong> Drop it on the tool, browse, or paste from your clipboard. It never uploads anywhere.</li>
+          <li><strong>Let it run.</strong> The depth map is generated automatically in your browser (WebGPU, with a WASM fallback).</li>
+          <li><strong>Adjust &amp; export.</strong> Pick a colormap or invert, then download an 8-bit PNG — or a 16-bit PNG with Pro.</li>
+        </ol>
+
+        <h2>Sample results</h2>
+        <div class="gallery-grid">
+          <figure>
+            <img src="/depth-map-generator/assets/park-before.jpg" alt="Original photo of trees in a park" loading="lazy" />
+            <figcaption>Original photo</figcaption>
+          </figure>
+          <figure>
+            <img src="/depth-map-generator/assets/park-depth.jpg" alt="Depth map generated from the park photo" loading="lazy" />
+            <figcaption>Generated depth map (viridis)</figcaption>
+          </figure>
+        </div>
+
+        <h2>What you can do with a depth map</h2>
+        <ul class="cases">
+          <li><strong>ControlNet / Stable Diffusion</strong> — feed the depth map as a <em>depth</em> control input to guide generation with accurate structure.</li>
+          <li><strong>Blender displacement</strong> — use the 16-bit depth map as a displacement texture to build real geometry from a photo.</li>
+          <li><strong>After Effects 2.5D parallax</strong> — drive parallax and camera moves for a cinematic “2.5D” look.</li>
+          <li><strong>Game &amp; 3D dev</strong> — prototype height/parallax maps and depth-based effects from reference images.</li>
+        </ul>
+
+        <h2>Frequently asked questions</h2>
+        <div class="faq">
+          <details>
+            <summary>How accurate is the depth map?</summary>
+            <p>It uses <strong>Depth Anything V2 (Small)</strong>, a state-of-the-art monocular depth model.
+            Depth is <em>relative</em>, not metric — single-image estimation infers plausible depth from visual
+            cues, so results are excellent for creative and 2.5D work but are not measured distances.</p>
+          </details>
+          <details>
+            <summary>Are my images uploaded to a server?</summary>
+            <p>No. All inference runs locally via WebGPU (or a WASM fallback). Only the AI model is downloaded
+            once and cached. Your images never leave your device — you can confirm it in the DevTools Network tab.</p>
+          </details>
+          <details>
+            <summary>What about detail in far or distant areas?</summary>
+            <p>Because this is single-image (monocular) depth estimation, the model is most confident about near
+            and mid-range structure. Far, distant regions get compressed into a narrow band of tones, so fine
+            differences between distant objects can flatten out. That’s a fundamental property of monocular depth,
+            not a bug. Pro’s original-resolution tiled processing recovers more local detail across the whole
+            frame, including farther areas.</p>
+          </details>
+          <details>
+            <summary>What does 16-bit export mean?</summary>
+            <p>A 16-bit grayscale PNG stores 65,536 depth levels instead of 256 — smooth gradients with no
+            banding, which matters for Blender displacement and high-quality compositing. It’s a Pro feature.</p>
+          </details>
+          <details>
+            <summary>Is Pro a one-time purchase?</summary>
+            <p>Yes — a single one-time payment of <strong>$19</strong>, no subscription. It unlocks 16-bit export,
+            original-resolution tiled processing, and batch export.</p>
+          </details>
+          <details>
+            <summary>Which image formats are supported?</summary>
+            <p>Any image your browser can open — PNG, JPEG, or WebP. Drop, browse, or paste.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <nav class="footer-nav">
+          <a href="/">Home</a>
+          <a href="/pixelate-image/">Pixelate Image</a>
+          <a href="/depth-map-generator/" aria-current="page">Depth Map Generator</a>
+        </nav>
+        <p>
+          <span data-site-name>ImageSpell</span> · Runs entirely in your browser. Model:
+          <a href="https://huggingface.co/depth-anything/Depth-Anything-V2-Small" rel="noopener">Depth Anything V2 Small</a>
+          (Apache 2.0). Your images are never uploaded.
+        </p>
+      </div>
+    </footer>
+
+    <!-- Before/after slider (presentational) -->
+    <script>
+      (function () {
+        var s = document.querySelector(".ba-slider");
+        if (!s) return;
+        var r = s.querySelector(".ba-range");
+        r.addEventListener("input", function () { s.style.setProperty("--pos", r.value + "%"); });
+      })();
+    </script>
+    <script type="module" src="/depth-map-generator/js/main.js"></script>
+  </body>
+</html>

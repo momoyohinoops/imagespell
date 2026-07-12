@@ -88,6 +88,16 @@ body {
   font-size: 0.9rem;
   text-align: center;
 }
+.footer-nav {
+  display: flex;
+  gap: 8px 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.footer-nav a { color: var(--muted); text-decoration: none; }
+.footer-nav a:hover { color: var(--brand); }
+.footer-nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
 
 /* ------------------------------------------------------------------ */
 /* Hero + tool                                                          */

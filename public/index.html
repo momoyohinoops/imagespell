@@ -34,7 +34,15 @@
             "name": "Pixelate Image",
             "applicationCategory": "MultimediaApplication",
             "operatingSystem": "Any (web browser)",
-            "url": "https://imagespell.com/pixelate-image",
+            "url": "https://imagespell.com/pixelate-image/",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+          },
+          {
+            "@type": "WebApplication",
+            "name": "Depth Map Generator",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Any (web browser)",
+            "url": "https://imagespell.com/depth-map-generator/",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
           }
         ]
@@ -67,13 +75,25 @@
       <section class="wrap">
         <h2 class="tools-heading">Tools</h2>
         <div class="tool-grid">
-          <a class="tool-card" href="/pixelate-image">
+          <a class="tool-card" href="/pixelate-image/">
             <span class="tool-emoji" aria-hidden="true">🟦</span>
             <span class="tool-body">
               <span class="tool-name">Pixelate Image</span>
               <span class="tool-desc">
-                Pixelate photos, redact sensitive info, and auto-blur every face —
+                Pixelate photos, redact sensitive info, and auto-pixelate every face —
                 100% in your browser.
+              </span>
+            </span>
+            <span class="tool-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a class="tool-card" href="/depth-map-generator/">
+            <span class="tool-emoji" aria-hidden="true">🗺️</span>
+            <span class="tool-body">
+              <span class="tool-name">Depth Map Generator</span>
+              <span class="tool-desc">
+                Turn any image into a depth map — free, in-browser, with 16-bit
+                PNG export for ControlNet, Blender, and 2.5D.
               </span>
             </span>
             <span class="tool-arrow" aria-hidden="true">→</span>
@@ -92,6 +112,11 @@
 
     <footer class="site-footer">
       <div class="wrap">
+        <nav class="footer-nav">
+          <a href="/" aria-current="page">Home</a>
+          <a href="/pixelate-image/">Pixelate Image</a>
+          <a href="/depth-map-generator/">Depth Map Generator</a>
+        </nav>
         <p>ImageSpell · Free, private, in-browser image tools. Nothing is uploaded.</p>
       </div>
     </footer>

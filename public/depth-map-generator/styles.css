@@ -1,0 +1,222 @@
+/* Depth Map Generator — supplemental styles.
+   Loaded AFTER /css/styles.css, so it reuses the shared design tokens
+   (--brand, --surface, --line, --muted, --radius, etc.) and shared classes
+   (.hero, .wrap, .tool, .dropzone, .btn-primary, .btn-ghost, .content, .faq). */
+
+/* Pro pill used inline in copy and on buttons. */
+.pro-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  padding: 1px 7px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+/* Before/after slider (hero). */
+.ba-slider {
+  position: relative;
+  max-width: 420px;
+  margin: 8px auto 4px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  line-height: 0;
+  touch-action: none;
+}
+.ba-slider img { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
+.ba-after {
+  position: absolute;
+  inset: 0;
+  width: var(--pos, 50%);
+  overflow: hidden;
+}
+.ba-after img { width: auto; height: 100%; max-width: none; }
+/* keep the "after" image aligned to the slider's full width */
+.ba-slider { --w: 420px; }
+.ba-after img { width: min(420px, 92vw); }
+.ba-range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+}
+.ba-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--pos, 50%);
+  width: 2px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  transform: translateX(-1px);
+  pointer-events: none;
+}
+.ba-handle::after {
+  content: "‹ ›";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 30px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.ba-caption { display: flex; justify-content: space-between; max-width: 420px; margin: 0 auto 8px; color: var(--muted); font-size: 0.8rem; }
+
+/* Notice / slow-mode banner. */
+.notice {
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: 0.9rem;
+}
+.notice.warn { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+
+/* Result previews (input | depth). */
+.depth-previews {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 4px;
+}
+.depth-previews figure { margin: 0; }
+.depth-previews figcaption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.depth-previews canvas {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: repeating-conic-gradient(#eef0f3 0% 25%, #fff 0% 50%) 50% / 22px 22px;
+}
+
+.badge {
+  font-size: 0.72rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.badge.ok { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
+.badge.warn { color: #9a3412; border-color: #fed7aa; background: #fff7ed; }
+
+/* Controls + exports. */
+.depth-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.depth-controls label { display: inline-flex; align-items: center; gap: 6px; }
+.depth-controls select {
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.result-info { font-size: 0.82rem; }
+
+.exports { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border-radius: 9px;
+  padding: 9px 14px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.btn:hover { border-color: var(--brand); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.file-btn input { display: none; }
+.chk { color: var(--muted); font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; }
+
+/* Upgrade card + license panel. */
+.upgrade { margin: 30px 0; }
+.upgrade-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #ffffff, #f7f9ff);
+  box-shadow: var(--shadow);
+}
+.upgrade-card h2 { margin: 0 0 6px; font-size: 1.2rem; }
+.upgrade-card .small { color: var(--muted); font-size: 0.85rem; }
+.btn.big { padding: 12px 22px; font-size: 1rem; }
+.btn.is-soon { opacity: 0.85; background: #eef2ff; color: var(--muted); border-color: #e0e7ff; cursor: default; }
+
+.pro-panel {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.pro-panel label { font-weight: 600; font-size: 0.9rem; }
+.key-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.key-row input {
+  flex: 1;
+  min-width: 220px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-family: ui-monospace, Menlo, monospace;
+}
+.license-msg { margin: 10px 0 0; color: var(--muted); min-height: 1.1em; font-size: 0.88rem; }
+
+/* Gallery. */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.gallery-grid figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.gallery-grid img { width: 100%; height: auto; display: block; }
+.gallery-grid figcaption { padding: 8px 12px; color: var(--muted); font-size: 0.82rem; }
+
+body.is-pro .btn.is-soon { display: none; }
+
+@media (max-width: 560px) {
+  .depth-previews { grid-template-columns: 1fr; }
+  .upgrade-card { flex-direction: column; align-items: stretch; }
+}
