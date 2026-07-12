@@ -58,6 +58,18 @@ cd public && python3 -m http.server 4173
 - ⚠️ **重要**: 公開ルートを `public/` にしたので、Pages の **Build output directory を `/` から
   `public` へ変更**する必要がある(未変更だと空ルートを配信して全ページ404)。
 
+### キャッシュ運用(重要 / 過去に事故あり)
+CSS/JS は**コンテンツハッシュを付けていない**ため、変更が返り客に届かず、
+「新HTML × 旧CSS/JS」で**レイアウトや挙動が壊れる**事故が起きた。対策は2段構え:
+1. **参照URLにバージョンを付ける**: `href="/css/styles.css?v=N"` /
+   `src="/…/js/main.js?v=N"`。**CSS か JS を変更したら `N` を上げる**(全ページの
+   該当リンクを揃える)。HTMLは常に revalidate されるので、全員が新URL=未キャッシュを取得する。
+   - ESモジュールは import 先までは自動でバージョンが付かない。**エントリ(main.js/app.js)
+     だけでなく、変更した被import モジュールがあれば、その分も `?v=N` を上げるかエントリ側を
+     更新して取り直させる**こと(通常はエントリのみ変更なのでエントリの版上げで足りる)。
+2. `_headers` で CSS/JS を `max-age=0, must-revalidate`(既設)。以後の変更は即反映される。
+   ※ ただし「バージョン変更前に旧max-ageでキャッシュ済みの端末」には 1) のURL版上げが効く。
+
 ### pages.dev の重複コンテンツ対策
 各ページの `canonical`(`https://imagespell.com/...`)で対応済み。`_redirects` はパス単位のみで
 ホスト名を判定できないため、`*.pages.dev` → 独自ドメインの 301 はダッシュボードの Redirect Rules
