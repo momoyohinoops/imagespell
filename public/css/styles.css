@@ -22,6 +22,18 @@
 /* The `hidden` attribute must win over display rules like .controls{display:grid}. */
 [hidden] { display: none !important; }
 
+/* Visually hide an element while keeping it focusable and, crucially, still
+   activatable by an associated/parent <label> — used for file inputs so a tap
+   on the dropzone opens the native picker on iOS Safari (where a programmatic
+   input.click() is unreliable). Do NOT use display:none for these. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -124,6 +136,7 @@ h1 {
 
 /* Dropzone */
 .dropzone {
+  display: block; /* it is a <label>; keep block layout for padding/width */
   border: 2px dashed #cbd5e1;
   border-radius: 12px;
   background: #fbfcfe;

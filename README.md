@@ -85,7 +85,21 @@ cd public && python3 -m http.server 4173
   `.env`(git-ignored)にのみ置き、Variant ID 取得等の開発作業だけに使う。ブラウザが叩くのは
   APIキー不要の公開 License API(activate/validate)のみ。
 
----
+### モバイル検証(実機必須・レスポンシブモード不可)
+
+以下は **iPhone Safari 実機**でしか正しく再現しない。PCのレスポンシブ/デバイスエミュレーションでは
+すり抜けるため、リリース前に実機で確認する:
+
+1. **ファイル選択(最重要)**: 入力の起点は `<label class="dropzone">` に `<input type="file"
+   accept="image/*" class="visually-hidden">` を**子として**入れたネイティブ関連付け。
+   タップ→OSの写真ピッカーが開くこと。
+   - プログラム的 `input.click()` は iOS で不発になりやすいため使わない(過去バグの原因)。
+   - `input` を `display:none` にすると label 経由で開かない端末があるため、必ず `.visually-hidden`
+     (フォーカス可能な視覚的非表示)にする。両ツール(pixelate / depth)で同一方式。
+2. **iOS 自動ズーム**: `font-size` が 16px 未満の `input`/`select` はフォーカス時に自動ズームする。
+   ライセンスキー入力・セレクトは 16px 以上にしてある。フォーカスして**ズームしない**こと。
+3. **タッチ挙動**: 「Pro — coming soon」ボタンは無効(タップしても何も起きない)。
+   キー入力は「already have a key?」リンクから開く(ズームせず案内が出る)。
 
 ## 公開前・公開後チェックリスト
 

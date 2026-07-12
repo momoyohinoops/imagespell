@@ -104,8 +104,8 @@
 
         <div id="tool" class="tool">
           <!-- Empty state / input -->
-          <div id="dropzone" class="dropzone" tabindex="0" role="button"
-               aria-label="Add an image: click to browse, drag and drop, or paste">
+          <label id="dropzone" class="dropzone"
+                 aria-label="Add an image: tap to browse, drag and drop, or paste">
             <div class="dz-inner">
               <div class="dz-icon" aria-hidden="true">🖼️</div>
               <p class="dz-title">Drop an image here</p>
@@ -115,8 +115,8 @@
               </p>
               <p class="dz-note">PNG · JPEG · WebP</p>
             </div>
-            <input id="fileInput" type="file" accept="image/*" hidden />
-          </div>
+            <input id="fileInput" type="file" accept="image/*" class="visually-hidden" />
+          </label>
 
           <!-- Canvas stage -->
           <div id="stage" class="stage" hidden>

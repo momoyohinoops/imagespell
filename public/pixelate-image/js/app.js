@@ -359,13 +359,10 @@ downloadBtn.addEventListener("click", async () => {
 fileInput.addEventListener("change", () => {
   if (fileInput.files && fileInput.files[0]) loadFromBlob(fileInput.files[0]);
 });
-dropzone.addEventListener("click", () => fileInput.click());
-dropzone.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" || e.key === " ") {
-    e.preventDefault();
-    fileInput.click();
-  }
-});
+// The dropzone is a <label> wrapping #fileInput, so a tap/click opens the
+// native file picker with no JS — the most reliable path on iOS Safari, where
+// a programmatic fileInput.click() is unreliable. (Keyboard: the focusable,
+// visually-hidden input activates on Enter/Space natively.)
 
 // 2) Drag & drop (accept anywhere on the tool area)
 const toolArea = $("tool");

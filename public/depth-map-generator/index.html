@@ -124,9 +124,9 @@
         </p>
 
         <div class="tool">
-          <div id="drop" class="dropzone" tabindex="0" role="button"
-               aria-label="Add an image: click to browse, drag and drop, or paste">
-            <input id="fileInput" type="file" accept="image/*" hidden />
+          <label id="drop" class="dropzone"
+                 aria-label="Add an image: tap to browse, drag and drop, or paste">
+            <input id="fileInput" type="file" accept="image/*" class="visually-hidden" />
             <div class="dz-inner">
               <div class="dz-icon" aria-hidden="true">🗺️</div>
               <p class="dz-title">Drop an image here</p>
@@ -136,7 +136,7 @@
               </p>
               <p class="dz-note">Runs locally · PNG · JPEG · WebP</p>
             </div>
-          </div>
+          </label>
 
           <div id="progress" class="progress" hidden style="margin-top:14px">
             <div class="bar" style="height:8px;background:#eef0f3;border-radius:999px;overflow:hidden">
@@ -185,7 +185,7 @@
             <h2>ImageSpell Pro <span id="proBadge" class="badge ok" hidden>Unlocked</span></h2>
             <p><strong>$19 — one-time purchase.</strong> No subscription. Unlocks 16-bit PNG
               export, original-resolution tiled processing, and batch export.</p>
-            <p class="small">Already purchased? <a href="#" id="hasKeyLink">Enter your license key →</a></p>
+            <p class="small"><span id="proHintLead">Already purchased?</span> <a href="#" id="hasKeyLink">Enter your license key →</a></p>
           </div>
           <button id="upgradeBtn" class="btn-primary big">Upgrade to Pro</button>
         </div>

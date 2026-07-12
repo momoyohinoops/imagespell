@@ -133,6 +133,7 @@
 .depth-controls label { display: inline-flex; align-items: center; gap: 6px; }
 .depth-controls select {
   font: inherit;
+  font-size: 16px; /* ≥16px stops iOS Safari auto-zoom on focus */
   padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid var(--line);
@@ -174,7 +175,14 @@
 .upgrade-card h2 { margin: 0 0 6px; font-size: 1.2rem; }
 .upgrade-card .small { color: var(--muted); font-size: 0.85rem; }
 .btn.big { padding: 12px 22px; font-size: 1rem; }
-.btn.is-soon { opacity: 0.85; background: #eef2ff; color: var(--muted); border-color: #e0e7ff; cursor: default; }
+.btn.is-soon,
+.btn-primary.is-soon {
+  background: #eef2ff;
+  color: var(--muted);
+  border: 1px solid #e0e7ff;
+  cursor: default;
+  opacity: 1;
+}
 
 .pro-panel {
   margin-top: 14px;
@@ -194,6 +202,7 @@
   border-radius: 9px;
   padding: 10px 12px;
   font-family: ui-monospace, Menlo, monospace;
+  font-size: 16px; /* ≥16px stops iOS Safari auto-zoom on focus */
 }
 .license-msg { margin: 10px 0 0; color: var(--muted); min-height: 1.1em; font-size: 0.88rem; }
 

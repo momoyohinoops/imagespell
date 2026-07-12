@@ -283,10 +283,14 @@ function setupUpgradeButton() {
   if (PRO_ENABLED) {
     btn.addEventListener("click", () => openCheckout({ onSuccess: onBought }));
   } else {
+    // Coming soon: the button is an inert badge (no click, no panel, so no iOS
+    // focus-zoom). The separate "already have a key?" link opens the key panel.
     btn.textContent = "Pro — coming soon";
     btn.classList.add("is-soon");
-    btn.addEventListener("click", () =>
-      openProPanel("Pro is launching soon — checkout will open here. Already have a license key? Paste it below."));
+    btn.disabled = true;
+    btn.setAttribute("aria-disabled", "true");
+    const lead = document.getElementById("proHintLead");
+    if (lead) lead.textContent = "Pro is launching soon — already have a key?";
   }
 }
 
