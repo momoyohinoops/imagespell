@@ -105,14 +105,15 @@
 
         <!-- Before / after showcase -->
         <div class="ba-caption"><span>Original</span><span>Depth map</span></div>
-        <div class="ba-slider" style="--pos:52%">
-          <img class="ba-before" src="/depth-map-generator/assets/tunnel-before.jpg"
-               alt="Original photo of a tunnel receding into the distance" />
+        <div class="ba-slider" style="--pos:48%">
+          <!-- base layer = depth (revealed on the right); overlay = original (left) -->
+          <img class="ba-before" src="/depth-map-generator/assets/tunnel-depth.jpg"
+               alt="Depth map generated from the tunnel photo" />
           <div class="ba-after">
-            <img src="/depth-map-generator/assets/tunnel-depth.jpg"
-                 alt="Depth map generated from the tunnel photo" />
+            <img src="/depth-map-generator/assets/tunnel-before.jpg"
+                 alt="Original photo of a tunnel receding into the distance" />
           </div>
-          <input class="ba-range" type="range" min="0" max="100" value="52"
+          <input class="ba-range" type="range" min="0" max="100" value="48"
                  aria-label="Drag to compare the original and the depth map" />
           <span class="ba-handle" aria-hidden="true"></span>
         </div>
