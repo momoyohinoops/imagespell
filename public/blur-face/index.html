@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Blur Faces in Photos — Free, Automatic, In-Browser | ImageSpell</title>
+    <meta
+      name="description"
+      content="Blur faces in a photo automatically the instant you drop it in — no clicks needed. Free, no upload, no sign-up, no watermark. Toggle each face, add custom areas, switch to pixelate."
+    />
+    <link rel="canonical" href="https://imagespell.com/blur-face/" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Blur Faces in Photos — Free & Automatic" />
+    <meta
+      property="og:description"
+      content="Drop a photo and every face is detected and blurred instantly, right in your browser. No upload, no watermark, no sign-up."
+    />
+    <meta property="og:url" content="https://imagespell.com/blur-face/" />
+    <meta property="og:image" content="https://imagespell.com/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- FAQ structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can a blurred face be un-blurred or reversed?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It depends on strength. A light blur can sometimes be partially reconstructed with AI restoration tools, so for anything sensitive we recommend a strong blur setting or, for the most certainty, switching to the Pixelate effect, which destroys the underlying pixel detail entirely."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my photo uploaded to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Face detection and blurring both run locally in your browser using Canvas and an on-device model. Your image never leaves your device — you can confirm this yourself in your browser's DevTools Network tab."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this tool free, and does it add a watermark?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, completely free with no sign-up. There is no watermark and no limit on how many images you can process."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What image formats are supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can load PNG, JPEG, and WebP images, and export your result as PNG, JPEG, or WebP at the original resolution."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What's the difference between Blur and Pixelate?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Blur smoothly smears a face into a soft, natural-looking haze. Pixelate replaces it with large solid blocks (a mosaic), which is more visually obvious but harder to reverse. This tool also has a dedicated Pixelate Image tool with a manual selection workflow for that mode."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Analytics (cookie-less). Uncomment ONE and set the ID in js/config.js docs. -->
+    <!-- Cloudflare Web Analytics:
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "REPLACE_WITH_CF_TOKEN"}'></script> -->
+    <!-- Plausible:
+    <script defer data-domain="REPLACE_WITH_PLAUSIBLE_DOMAIN"
+      src="https://plausible.io/js/script.js"></script> -->
+
+    <link rel="stylesheet" href="/css/styles.css?v=2" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span data-site-name>ImageSpell</span>
+        </a>
+        <span class="privacy-pill">🔒 Your image never leaves your device</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- ================= TOOL ================= -->
+      <section class="hero wrap">
+        <h1>Blur faces in a photo online</h1>
+        <p class="sub">
+          Drop a photo and every face is found and blurred automatically —
+          zero clicks. Fine-tune the strength, toggle any face back on, or
+          drag to cover extra areas like license plates. All in your browser.
+        </p>
+
+        <div id="tool" class="tool">
+          <!-- Empty state / input -->
+          <label id="dropzone" class="dropzone"
+                 aria-label="Add an image: tap to browse, drag and drop, or paste">
+            <div class="dz-inner">
+              <div class="dz-icon" aria-hidden="true">🙈</div>
+              <p class="dz-title">Drop a photo here</p>
+              <p class="dz-or">
+                or <span class="dz-link">browse files</span> · paste with
+                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>V</kbd>
+              </p>
+              <p class="dz-note">Faces are blurred automatically · PNG · JPEG · WebP</p>
+            </div>
+            <input id="fileInput" type="file" accept="image/*" class="visually-hidden"
+                   style="position:absolute;width:1px;height:1px;padding:0;border:0;opacity:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%)" />
+          </label>
+
+          <!-- Canvas stage -->
+          <div id="stage" class="stage" hidden>
+            <div class="canvas-holder">
+              <canvas id="canvas"></canvas>
+              <canvas id="overlay" class="overlay selectable"></canvas>
+            </div>
+            <p id="regionHint" class="region-hint" hidden></p>
+          </div>
+
+          <!-- Controls -->
+          <div id="controls" class="controls" hidden>
+            <div class="control-row">
+              <label class="slider-label" id="strengthLabel" for="strengthSlider">
+                Blur strength <output id="strengthValue">16</output>
+              </label>
+              <input id="strengthSlider" type="range" min="2" max="100" value="16" />
+            </div>
+
+            <div class="control-row modes" role="group" aria-label="Effect">
+              <button id="modeBlur" class="seg active" aria-pressed="true">
+                Blur
+              </button>
+              <button id="modePixelate" class="seg" aria-pressed="false">
+                Pixelate
+              </button>
+            </div>
+
+            <div class="control-row download-row">
+              <label class="fmt-label" for="formatSelect">Format</label>
+              <select id="formatSelect">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="webp">WebP</option>
+              </select>
+              <button id="downloadBtn" class="btn-primary">Download</button>
+              <button id="resetBtn" class="btn-ghost">New image</button>
+            </div>
+          </div>
+
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- ================= LP CONTENT ================= -->
+      <section class="content wrap">
+        <h2>How to blur a face in a photo</h2>
+        <ol class="steps">
+          <li>
+            <strong>Add your photo.</strong> Drag &amp; drop it onto the tool,
+            click to browse, or paste from your clipboard. Faces are detected
+            and blurred the instant it loads — no button to press.
+          </li>
+          <li>
+            <strong>Fine-tune.</strong> Slide to make the blur softer or
+            stronger, or switch to Pixelate for a harder-to-reverse mosaic.
+          </li>
+          <li>
+            <strong>Adjust which faces are covered.</strong> Click any
+            detected face to turn its blur on or off. Missed something like a
+            license plate? Drag on the image to add a custom area.
+          </li>
+          <li>
+            <strong>Download.</strong> Pick PNG, JPEG, or WebP and save at
+            full original resolution — no watermark, no limits.
+          </li>
+        </ol>
+
+        <h2>What people use it for</h2>
+        <ul class="cases">
+          <li>
+            <strong>Anonymize bystanders and kids</strong> in photos before
+            posting them to social media.
+          </li>
+          <li><strong>Street photography</strong> — blur strangers' faces while keeping the scene intact.</li>
+          <li>
+            <strong>Privacy compliance</strong> — blur identifiable faces in
+            photos shared for GDPR or similar privacy requirements.
+          </li>
+          <li>
+            <strong>Redact screenshots</strong> — cover license plates and
+            other personal details the face detector doesn't catch, using the
+            manual area tool.
+          </li>
+        </ul>
+
+        <h2>Frequently asked questions</h2>
+        <div class="faq">
+          <details>
+            <summary>Can a blurred face be un-blurred or reversed?</summary>
+            <p>
+              It depends on strength. A light blur can sometimes be partially
+              reconstructed with AI restoration tools, so for anything
+              sensitive use a strong blur setting or, for the most certainty,
+              switch to the <strong>Pixelate</strong> effect, which destroys
+              the underlying pixel detail entirely.
+            </p>
+          </details>
+          <details>
+            <summary>Is my photo uploaded to a server?</summary>
+            <p>
+              No. Face detection and blurring both run locally in your
+              browser. Your photo never leaves your device — you can confirm
+              it yourself in your browser's DevTools Network tab.
+            </p>
+          </details>
+          <details>
+            <summary>Is this tool free, and does it add a watermark?</summary>
+            <p>Yes — completely free, no sign-up, no watermark, and no limits.</p>
+          </details>
+          <details>
+            <summary>What image formats are supported?</summary>
+            <p>
+              Load PNG, JPEG, or WebP images, and export as PNG, JPEG, or WebP
+              at the original resolution.
+            </p>
+          </details>
+          <details>
+            <summary>What's the difference between Blur and Pixelate?</summary>
+            <p>
+              Blur smoothly smears a face into a soft haze. Pixelate replaces
+              it with large solid blocks (a mosaic) — more visually obvious
+              but harder to reverse. For whole-image pixelation and manual
+              region selection, see the
+              <a href="/pixelate-image/">Pixelate Image tool</a>.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <nav class="footer-nav">
+          <a href="/">Home</a>
+          <a href="/blur-face/" aria-current="page">Blur Face</a>
+          <a href="/pixelate-image/">Pixelate Image</a>
+          <a href="/depth-map-generator/">Depth Map Generator</a>
+        </nav>
+        <p>
+          <span data-site-name>ImageSpell</span> · Runs entirely in your browser.
+          Your images are never uploaded.
+        </p>
+      </div>
+    </footer>
+
+    <script type="module" src="/blur-face/js/app.js?v=1"></script>
+  </body>
+</html>
