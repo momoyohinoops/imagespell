@@ -167,9 +167,10 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - [x] 実装(コア体験・顔ごとON/OFF・手動矩形追加・Blur/Pixelate切替・強度スライダー・全解像度書き出し)
 - [x] モバイル対応(font-size 16px以上・label+input file・touch-action確認は実機で要再確認)
 - [x] 傘サイトへ統合(ホーム・sitemap.xml・既存2ツールとの相互リンク・JSON-LD・OGP)
-- [ ] デスクトップChrome・iPhone Safari実機での受け入れ基準(指示書§受け入れ基準)最終確認
-- [ ] Lighthouse Performance 90以上の実機測定
-- [ ] 公開(main マージ → push → 自動デプロイ)
+- [x] デスクトップChrome・iPhone Safari実機での受け入れ基準(指示書§受け入れ基準)最終確認
+      (実機テストで見つかった不具合4件は修正済み。詳細は上の作業ログ・pixelate-imageメモ参照)
+- [x] Lighthouse Performance 90以上の実機測定(97点)
+- [x] 公開(main マージ → push → 自動デプロイ済み。https://imagespell.com/blur-face/ で稼働中)
 - [ ] 公開日: ____(依頼者記入)/ 30日判定日: ____(依頼者記入)
       判定基準: GSCインデックス済み かつ(インプレッション累計100+ or クリック5+)。X経由ノーカウント
 - [ ] GSCでsitemap再送信
