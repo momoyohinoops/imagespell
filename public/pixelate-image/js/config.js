@@ -1,13 +1,22 @@
 // ---------------------------------------------------------------------------
-// Site configuration — change these in ONE place when the domain is decided.
+// Site configuration.
+//
+// Only `name` is read at runtime today (app.js reflects it into [data-site-name]).
+// canonical / og:url / og:image are hard-coded in index.html's <head> so the
+// crawler sees them without running JS. The fields below are therefore RESERVED,
+// not live: they document the intended single source of truth for when a build
+// step (or JS-injected meta) is introduced. Until then, if you change a URL/OGP
+// value you must also edit index.html — these constants won't do it for you.
 // ---------------------------------------------------------------------------
 export const SITE = {
-  name: "ImageSpell",
+  name: "ImageSpell", // live — reflected into [data-site-name]
+
+  // ── Reserved (not currently read; mirror index.html <head> if you build one) ──
   // Public URL of the deployed site (used for OGP / canonical). No trailing slash.
   url: "https://imagespell.com",
   // Path of the pixelate tool under the umbrella site.
   pixelatePath: "/pixelate-image",
-  // OGP share image (relative to site root). Provide a real 1200x630 later.
+  // OGP share image (relative to site root).
   ogImage: "/og-image.png",
   // Twitter/X handle for the card (optional, include the @).
   twitter: "",
