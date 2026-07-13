@@ -6,7 +6,10 @@
 // ---------------------------------------------------------------------------
 
 // Pinned version for reproducibility. Bump deliberately after testing.
-const VERSION = "0.10.18";
+// (Bumped from 0.10.18 to pick up 17 releases' worth of fixes after a real
+// Mac Safari failed to create ANY internal WebGL context for this library
+// specifically, despite the browser's own WebGL working fine otherwise.)
+const VERSION = "0.10.35";
 const BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}`;
 const MODEL =
   "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
