@@ -80,7 +80,7 @@
     </script>
 
     <link rel="stylesheet" href="/css/styles.css?v=2" />
-    <link rel="stylesheet" href="/depth-map-generator/styles.css?v=4" />
+    <link rel="stylesheet" href="/depth-map-generator/styles.css?v=5" />
   </head>
   <body>
     <header class="site-header">
@@ -107,11 +107,11 @@
         <div class="ba-caption"><span>Original</span><span>Depth map</span></div>
         <div class="ba-slider" style="--pos:48%">
           <!-- base layer = depth (revealed on the right); overlay = original (left) -->
-          <img class="ba-before" src="/depth-map-generator/assets/tunnel-depth.jpg"
-               alt="Depth map generated from the tunnel photo" />
+          <img class="ba-before" src="/depth-map-generator/assets/grove-depth.jpg"
+               alt="Depth map of a park with a pine grove and boulders" />
           <div class="ba-after">
-            <img src="/depth-map-generator/assets/tunnel-before.jpg"
-                 alt="Original photo of a tunnel receding into the distance" />
+            <img src="/depth-map-generator/assets/grove-before.jpg"
+                 alt="Original photo of a park with a pine grove and boulders" />
           </div>
           <input class="ba-range" type="range" min="0" max="100" value="48"
                  aria-label="Drag to compare the original and the depth map" />
@@ -256,6 +256,9 @@
             <summary>What does 16-bit export mean?</summary>
             <p>A 16-bit grayscale PNG stores 65,536 depth levels instead of 256 — smooth gradients with no
             banding, which matters for Blender displacement and high-quality compositing. It’s a Pro feature.</p>
+            <img class="faq-sample" src="/depth-map-generator/assets/grove-depth-gray-sample.jpg"
+                 alt="Grayscale depth data sample: near objects are lighter, far background is darker"
+                 width="240" loading="lazy" />
           </details>
           <details>
             <summary>Is Pro a one-time purchase?</summary>
@@ -294,6 +297,6 @@
         r.addEventListener("input", function () { s.style.setProperty("--pos", r.value + "%"); });
       })();
     </script>
-    <script type="module" src="/depth-map-generator/js/main.js?v=2"></script>
+    <script type="module" src="/depth-map-generator/js/main.js?v=3"></script>
   </body>
 </html>

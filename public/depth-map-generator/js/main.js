@@ -25,6 +25,13 @@ const state = {
 function currentOpts() {
   return { invert: $("invert").checked, colormapKey: $("colormap").value };
 }
+// PNG exports (8-bit, batch) are always grayscale regardless of the on-screen
+// colormap: a colored depth map is a nice preview, but the file people actually
+// feed into ControlNet/Blender/etc. should be literal single-channel depth
+// data. Only `invert` (near/far direction) carries over from the UI.
+function exportOpts() {
+  return { invert: $("invert").checked, colormapKey: "grayscale" };
+}
 
 // ── Image loading ────────────────────────────────────────────────────────────
 function loadImage(src) {
@@ -123,7 +130,7 @@ function redraw() {
 async function doExport8() {
   if (!state.field) return;
   const { width, height } = state.originalCanvas;
-  const blob = await exportPNG8(state.field, state.fieldW, state.fieldH, width, height, currentOpts());
+  const blob = await exportPNG8(state.field, state.fieldW, state.fieldH, width, height, exportOpts());
   triggerDownload(blob, `${state.fileName}-depth.png`);
 }
 
@@ -142,7 +149,7 @@ async function runBatch(files) {
   if (!requirePro()) return;
   if (!files.length) return;
   const results = [];
-  const opts = currentOpts();
+  const opts = exportOpts();
   const bits = $("batch16").checked ? 16 : 8;
   let i = 0;
   for (const file of files) {
@@ -250,6 +257,9 @@ function boot() {
     o.value = k; o.textContent = k === "grayscale" ? "Grayscale" : k;
     sel.appendChild(o);
   }
+  // On-screen default is turbo (reads better at a glance); PNG export still
+  // defaults to grayscale regardless — see exportOpts().
+  sel.value = "turbo";
   $("invert").checked = POSTPROCESS.invertDefault;
   if (!hasWebGPU()) $("slowNotice").hidden = false;
 

@@ -209,6 +209,16 @@
 }
 .license-msg { margin: 10px 0 0; color: var(--muted); min-height: 1.1em; font-size: 0.88rem; }
 
+.faq-sample {
+  display: block;
+  margin-top: 10px;
+  max-width: 240px;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
 /* Gallery. */
 .gallery-grid {
   display: grid;
