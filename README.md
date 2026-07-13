@@ -129,6 +129,25 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - Day 1 投稿: 2026-07-08(pixelate image 出荷)
   URL: (未記録 — わかり次第追記)
 - 判定基準(8/6): インデックス済み かつ(インプレッション累計 100+ or クリック 5+)
+- [ ] **既知バグ(2026-07-14 blur-face 開発中に発見、pixelate-image 側は未修正)**:
+  「Auto-pixelate faces」ボタンで顔検出が失敗し「Face detection failed to load.」と表示される
+  環境がある(報告端末: macOS 12.7.6 / Safari 17系。macOSの制約でこれ以上OS・Safariを更新できない機体)。
+  - コンソールで確認した実際のエラー: `TypeError: undefined is not an object (evaluating
+    'GLctx.activeTexture')`。その直前に `Couldn't create webGL 2 context.` /
+    `Couldn't create webGL 1 context.` のログあり(MediaPipe内部のWebGLコンテキスト作成が失敗)
+  - 一方でブラウザ自体のWebGLは正常
+    (`document.createElement('canvas').getContext('webgl')` は動作する)
+  - 失敗タイミングは検出器の**作成時ではなく `detector.detect()` 実行時**。
+    GPU委任の作成は成功しているように見えて、実際に使う段になって壊れるパターン
+  - blur-face側で試して効果がなかったもの: CPU委任への固定、MediaPipeライブラリの
+    バージョン更新(0.10.18 → 0.10.35)、Safari再起動、Mac本体の再起動
+  - blur-face側の最終対応: 実行時失敗も検知してCPUにフォールバックする形にした上で
+    GPUを既定に戻した(`public/blur-face/js/faces.js` の `getDetector()` /
+    `detectFaces()` 参照)。pixelate-image側の `public/pixelate-image/js/app.js` の
+    `faceBtn` ハンドラは今のところGPU失敗時のフォールバックが無い(作成時のtry/catchのみ)ため、
+    同様の対策を移植すれば直る可能性が高い
+  - 古いmacOS/GPUドライバ固有の制約の可能性が高く、一般ユーザーの大半には影響しないと
+    推測されるが未検証。対応するかはコスト対効果次第(判断は依頼者)
 
 ### depth-map-generator(公開済み)
 - [x] 実装(コア/表示オプション/Pro:16-bit・タイル・バッチ/LS統合/LP/モバイル)
@@ -179,6 +198,10 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 
 ## 作業ログ
 簡潔な1行ログ(履歴が追える程度)。新しいものを上に追加。
+- 2026-07-14: blur-faceの実機テストでバグ3件を修正・本番反映(ぼかし範囲が画像端付近でズーム/
+  顔が透ける、Safari旧バージョンでのぼかし無効、blur-face用JSのキャッシュ設定漏れ)。加えて
+  顔検出がGPU実行時にのみ失敗する既知バグをpixelate-image側にも発見、README「公開前・公開後
+  チェックリスト」のpixelate-image項に調査メモを記録(コードは変更していない)。
 - 2026-07-13: blur-face(3本目・無料pSEO弾)実装完了。pixelate-imageのコード資産をコピーで流用、
   自動顔検出→ぼかしのゼロ操作体験・Blur/Pixelate切替・顔ごとON/OFFを実装。統合作業(ホーム/sitemap/
   相互リンク)まで完了。公開は依頼者判断待ち。
