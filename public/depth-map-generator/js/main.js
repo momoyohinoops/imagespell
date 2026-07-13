@@ -249,7 +249,15 @@ async function handleFile(file) {
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
+// Site name lives in the markup as a [data-site-name] fallback; mirror pixelate's
+// app.js by reflecting it from one constant here (a local literal, not a shared
+// module — the two tools stay decoupled). The fallback text already reads
+// "ImageSpell", so this is belt-and-suspenders for a future site-wide rename.
+const SITE_NAME = "ImageSpell";
+
 function boot() {
+  for (const el of document.querySelectorAll("[data-site-name]")) el.textContent = SITE_NAME;
+
   // populate colormap select
   const sel = $("colormap");
   for (const k of COLORMAP_KEYS) {
