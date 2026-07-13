@@ -4,7 +4,7 @@
     {
       "name": "pixelate",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "4173"],
+      "runtimeArgs": ["-m", "http.server", "4173", "--directory", "public"],
       "port": 4173
     }
   ]
