@@ -19,20 +19,18 @@ async function createDetector() {
   );
   const vision = await FilesetResolver.forVisionTasks(`${BASE}/wasm`);
 
-  // Try GPU first; fall back to CPU on devices/browsers where GPU delegate fails.
-  const build = (delegate) =>
-    FaceDetector.createFromOptions(vision, {
-      baseOptions: { modelAssetPath: MODEL, delegate },
-      runningMode: "IMAGE",
-      minDetectionConfidence: 0.5,
-    });
-
-  try {
-    return await build("GPU");
-  } catch (e) {
-    console.warn("Face detector GPU delegate failed, falling back to CPU.", e);
-    return await build("CPU");
-  }
+  // CPU delegate only. The GPU delegate's WebGL context has been observed to
+  // initialize successfully but then throw ("GLctx.activeTexture" undefined)
+  // the moment .detect() actually runs on real Safari — a failure mode that
+  // happens after creation, so a try/catch around creation alone can't catch
+  // or fall back from it. This is a single still-image detection, not
+  // real-time video, so there's no meaningful speed cost to just skipping
+  // GPU entirely and staying reliable everywhere.
+  return FaceDetector.createFromOptions(vision, {
+    baseOptions: { modelAssetPath: MODEL, delegate: "CPU" },
+    runningMode: "IMAGE",
+    minDetectionConfidence: 0.5,
+  });
 }
 
 /**

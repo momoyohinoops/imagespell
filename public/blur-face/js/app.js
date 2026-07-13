@@ -313,7 +313,7 @@ async function autoDetect() {
   if (!state.sourceCanvas) return;
   setStatus("Loading face detector (first time only)…", true);
   try {
-    const { detectFaces } = await import("./faces.js");
+    const { detectFaces } = await import("./faces.js?v=2");
     if (!state.sourceCanvas) return; // user swapped images while loading
     const boxes = await detectFaces(state.sourceCanvas);
     if (!state.sourceCanvas) return;
