@@ -13,3 +13,5 @@
   Cache-Control: public, max-age=0, must-revalidate
 /depth-map-generator/js/*
   Cache-Control: public, max-age=0, must-revalidate
+/blur-face/js/*
+  Cache-Control: public, max-age=0, must-revalidate

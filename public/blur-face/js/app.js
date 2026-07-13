@@ -1,4 +1,4 @@
-import { render } from "./blur.js";
+import { render } from "./blur.js?v=3";
 import { track } from "./analytics.js";
 import { SITE } from "./config.js";
 
@@ -333,7 +333,7 @@ async function autoDetect() {
     }
   } catch (e) {
     console.error(e);
-    setStatus("Face detection failed to load. Drag on the image to blur an area manually.");
+    setStatus("Face detection failed to load. Drag on the image to blur an area manually.", true);
   } finally {
     drawOverlay();
     updateRegionHint();
