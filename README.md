@@ -29,6 +29,8 @@ public/                         ← Cloudflare Pages の Build output directory
 ├── _headers / _redirects / robots.txt / sitemap.xml / og-image.png
 outputs/                        ← 配信対象外の生成物(SNS投稿画像など)
 docs/ · README.md · .gitignore  ← リポジトリ管理物(public 外・非配信)
+  └ docs/ = 各ツールの実装依頼書(`<tool>_指示書*.md`)= 実装前ブリーフの歴史的記録。
+     現行構造の正はこの README。
 ```
 
 ### 規約: 3本目以降のツールを追加する手順(1ツール = 1ディレクトリ)
@@ -93,9 +95,10 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - **Pro ゲート: `PRO_ENABLED`**(同ファイル)。現在 `false` = 「Pro — coming soon」表示で
   チェックアウトを開かない。ライセンスキー入力欄は常時有効(先行キーで解錠可能)。
   **KYC 完了後に `true` に切り替える**(1箇所)。
-- **API キーはこのリポジトリには存在しない/コミットしない。** キーは開発用の別ワーキングコピーの
-  `.env`(git-ignored)にのみ置き、Variant ID 取得等の開発作業だけに使う。ブラウザが叩くのは
-  APIキー不要の公開 License API(activate/validate)のみ。
+- **API キーはコミットしない。** キーはリポジトリ**ルート**の `.env`(`.gitignore` 済み・
+  `public/` の外なので配信もされない)にのみ置き、Variant ID 取得等の開発作業だけに使う。雛形は
+  `.env.example`(公開値のみ・秘密なし)。ブラウザが叩くのは APIキー不要の公開 License API
+  (activate/validate)のみ。
 
 ### モバイル検証(実機必須・レスポンシブモード不可)
 
