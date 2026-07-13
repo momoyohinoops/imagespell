@@ -119,24 +119,39 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - [x] 実装・モバイル実機・デプロイ・ドメイン・アナリティクス・Search Console・OGP・Day 1 告知
 - 判定基準(8/6): インデックス済み かつ(インプレッション累計 100+ or クリック 5+)
 
-### depth-map-generator(公開準備)
+### depth-map-generator(公開済み)
 - [x] 実装(コア/表示オプション/Pro:16-bit・タイル・バッチ/LS統合/LP/モバイル)
 - [x] 技術検証(2048px 中央値 2.4 秒 @ WebGPU fp16・内蔵GPU)
 - [x] 傘サイトへ統合(1ツール1ディレクトリ・相互リンク・sitemap・JSON-LD・OGP)
 - [x] LP サンプル画像 / og.jpg(1200×630 左右分割)/ X用 16:9 を生成
-- [ ] **Cloudflare Pages の Build output directory を `public` に変更**(このPR構成の前提)
-- [ ] 公開(main マージ → push → 自動デプロイ)
-- [ ] 公開URL 確認: https://imagespell.com/depth-map-generator/
-- [ ] **公開日を記入: __________**（30日判定日: 公開日 + 29日 = __________）
+- [x] Cloudflare Pages の Build output directory を `public` に変更
+- [x] 公開(main マージ → push → 自動デプロイ)
+- [x] 公開URL 確認: https://imagespell.com/depth-map-generator/
 - [ ] Lemon Squeezy KYC 完了 → `PRO_ENABLED=true` に切替 → テストモードで
       購入→キー→解錠の **E2E 確認**
 - [ ] LS 製品ギャラリーの仮アイコンを、実写ベースのビフォー/アフター製品画像へ差し替え
 - [ ] X(@imagespell)で **"Day N"** 出荷投稿(16:9 は `outputs/` に生成済み)
 - [ ] (任意)実 Chrome での WASM フォールバック疎通確認
 
-#### 判定基準(30日クイットメトリクス)
-判定日 = 公開日 + 29日。合格 = **インデックス済み** かつ(**インプレッション累計 100+** or
-**クリック 5+**)。Pro は KYC 後に有効化するため、初期は無料機能の集客力で判定する。
+## Depth Map Generator — 判定台帳
+
+- 公開日: 2026-07-12(https://imagespell.com/depth-map-generator)
+- Day N 投稿: (投稿したら日付とURLを記入)
+
+### 30日判定(二軸・事後の下方修正禁止)
+1. SEO軸 — 判定日: **2026-08-11**
+   - 合格基準: Google Search Console でインデックス登録済み、かつ
+     オーガニックのインプレッションが発生していること
+   - 不合格時: 本ページへの追加投資を停止(削除はしない。放置で熟成)
+2. 課金軸 — 判定日: **Pro有効化日 + 30日**(有効化日: ____ / 判定日: ____)
+   - 合格基準: 初課金 1件
+   - 前提: LS KYC完了 → テスト購入E2E → PRO_ENABLED=true
+   - 不合格時: 価格・訴求の変更を1回試す($14早割 等)→それでもゼロなら
+     Pro機能は維持したまま追加投資停止、次弾へ
+
+### 備考
+- X経由・直接流入はSEO判定にカウントしない(GSCオーガニックのみ)
+- KYCトリップワイヤー: 2026-07-24までに審査完了しない場合はPolar移行を検討
 
 ## リポジトリ名について
 このリポジトリの実体は imagespell サイト全体。GitHub 上の名称は運用に合わせて
