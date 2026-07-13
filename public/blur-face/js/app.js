@@ -313,7 +313,7 @@ async function autoDetect() {
   if (!state.sourceCanvas) return;
   setStatus("Loading face detector (first time only)…", true);
   try {
-    const { detectFaces } = await import("./faces.js?v=2");
+    const { detectFaces } = await import("./faces.js?v=3");
     if (!state.sourceCanvas) return; // user swapped images while loading
     const boxes = await detectFaces(state.sourceCanvas);
     if (!state.sourceCanvas) return;
@@ -333,7 +333,7 @@ async function autoDetect() {
     }
   } catch (e) {
     console.error(e);
-    setStatus("Face detection failed to load. Drag on the image to blur an area manually.", true);
+    setStatus("Face detection failed to load. Drag on the image to blur an area manually.");
   } finally {
     drawOverlay();
     updateRegionHint();
