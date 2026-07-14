@@ -41,6 +41,10 @@
 - コミット: 1論点=1コミット。conventional commits 形式
   (feat: / fix: / docs: / refactor: ...)
 - CSS/JS を更新したらキャッシュバスティング(?v=N)の更新を忘れない
+- 新ツールの canonical・sitemap・内部リンクは末尾スラッシュあり
+  (`https://imagespell.com/<tool-name>/`。Cloudflare Pages の配信実態と一致する形)で
+  宣言する。公開前に `curl -I` で canonical 記載URLが 200 を返すことを確認する
+  (スラッシュなしは 308 になり、GSC でリダイレクトエラーの原因になる)
 - モバイルは実機タップ前提で作る: input/フォーム要素の font-size は 16px 以上
   (iOS Safari の自動ズーム対策)、ファイル選択は <label>+<input type="file">
   の素直な関連付け
