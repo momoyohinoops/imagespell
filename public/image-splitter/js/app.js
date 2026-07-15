@@ -19,6 +19,32 @@ const MIME = { png: "image/png", jpeg: "image/jpeg" };
 const EXT = { png: "png", jpeg: "jpg" };
 const JPEG_QUALITY = 0.95;
 
+// --- Web Share API feature detection -----------------------------------------
+// A minimal valid 1x1 transparent PNG, used only to probe whether this browser
+// can share image files at all (support varies: iOS/Android Safari & Chrome
+// generally can, most desktop browsers can't) — never actually shared itself.
+const PROBE_PNG_BYTES = Uint8Array.from(
+  atob(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+  ),
+  (c) => c.charCodeAt(0)
+);
+function canShareFiles() {
+  if (typeof navigator.share !== "function" || typeof navigator.canShare !== "function") {
+    return false;
+  }
+  try {
+    const probe = new File([PROBE_PNG_BYTES], "probe.png", { type: "image/png" });
+    return navigator.canShare({ files: [probe] });
+  } catch (_) {
+    return false;
+  }
+}
+// Feature is static for the session — decide visibility once at load, no need
+// to re-check per image. Hidden entirely (not just disabled) when unsupported,
+// so unsupported browsers see exactly the v1 download/zip flow, unchanged.
+if (canShareFiles()) sharePiecesBtn.hidden = false;
+
 // --- Element refs ------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
 const dropzone = $("dropzone");
@@ -39,6 +65,7 @@ const igPresetBtn = $("igPresetBtn");
 const slicesSlider = $("slicesSlider");
 const slicesValue = $("slicesValue");
 const formatSelect = $("formatSelect");
+const sharePiecesBtn = $("sharePiecesBtn");
 const downloadZipBtn = $("downloadZipBtn");
 const resetBtn = $("resetBtn");
 const statusEl = $("status");
@@ -340,6 +367,70 @@ downloadZipBtn.addEventListener("click", async () => {
   setStatus(`Downloaded ✓ (${files.length} pieces)`);
   downloadZipBtn.disabled = false;
   track("Download Zip", { mode: state.mode, count: files.length, format: state.format });
+});
+
+// "Save to Photos" — only wired up when canShareFiles() revealed the button.
+// On iOS/Android this hands the OS share sheet real image Files, letting the
+// user save straight to the Photos app (or share into Instagram directly)
+// instead of the ZIP-to-Files-app route, which iOS Safari has no way around.
+sharePiecesBtn.addEventListener("click", async () => {
+  if (!state.sourceCanvas) return;
+  // Same fresh-recompute + pieceToBlob pipeline as the ZIP button — full
+  // resolution, same EXIF-free canvas export, no reuse of the downscaled
+  // preview canvas.
+  const pieces = computeCurrentFullPieces();
+  if (!pieces.length) return;
+  sharePiecesBtn.disabled = true;
+
+  try {
+    const total = pieces.length;
+    const files = [];
+    for (let i = 0; i < total; i++) {
+      setStatus(`Preparing to share… ${i + 1}/${total}`, true);
+      if (i % 4 === 0) await new Promise((r) => setTimeout(r, 0));
+      const piece = pieces[i];
+      const blob = await pieceToBlob(piece);
+      if (blob) files.push(new File([blob], pieceFilename(piece, i), { type: MIME[state.format] || "image/png" }));
+    }
+
+    if (!files.length) {
+      setStatus("Export failed. Try a different format.");
+      return;
+    }
+
+    if (navigator.canShare?.({ files })) {
+      // Whole-batch share: on iOS this is the one-tap "Save N Images" path.
+      await navigator.share({ files });
+      setStatus(`Shared ✓ (${files.length} pieces)`);
+    } else {
+      // Platform can share files but rejected this batch (e.g. a file-count
+      // or size ceiling) — fall back to sharing pieces one at a time.
+      let shared = 0;
+      for (const file of files) {
+        if (!navigator.canShare?.({ files: [file] })) continue;
+        try {
+          await navigator.share({ files: [file] });
+          shared++;
+        } catch (e) {
+          if (e instanceof DOMException && e.name === "AbortError") break; // user cancelled
+        }
+      }
+      setStatus(
+        shared
+          ? `Shared ✓ (${shared}/${files.length} pieces)`
+          : "Sharing isn't supported for this file — try Download ZIP instead."
+      );
+    }
+    track("Share Pieces", { mode: state.mode, count: files.length, format: state.format });
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") {
+      setStatus(""); // user cancelled the share sheet — not an error
+    } else {
+      setStatus("Sharing failed. Try Download ZIP instead.");
+    }
+  } finally {
+    sharePiecesBtn.disabled = false;
+  }
 });
 
 resetBtn.addEventListener("click", () => {
