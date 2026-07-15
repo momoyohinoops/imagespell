@@ -203,9 +203,11 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - [x] モバイル対応(font-size 16px以上・label+input file・touch-action確認は実機で要再確認)
 - [x] Lighthouse Performance 94点(ローカルサーバー・headless Chrome実測)
 - [x] OGP画像(1200×630・イラストのみ・実写/人物なし)生成
-- [ ] 受け入れ基準4(EXIF非含有)をGPS付きEXIF埋め込みテスト画像で実ファイル検証
-      (依頼者からテスト画像受領後に実施。canvas再描画による書き出しのためblur-face同様に
-      自然に除去される見込み)
+- [x] 受け入れ基準4(EXIF非含有)をGPS付きEXIF埋め込みテスト画像(iPhone撮影・依頼者提供)で
+      実ファイル検証。exiftoolで比較: 元ファイルはGPS/Make/Model/Software/Lens等[EXIF]グループ
+      53項目を保持、書き出し後のPNG・JPEGピースはいずれも[EXIF]グループ0件(GPS含め完全除去)。
+      JPEGにはCanvas標準のsRGB ICCプロファイルのみ残るが個人情報は含まない。検証用テスト画像・
+      出力ファイルはリポジトリ外(/tmp)で扱い、検証後に削除済み(リポジトリには一切残っていない)
 - [ ] 依頼者: iPhone Safari実機での受け入れ基準(指示書§受け入れ基準6)最終確認
 - [ ] 統合作業(ホームカード・sitemap・既存3ツールとの相互リンク)の別途発注
 - [ ] **発射直前の5分SERP鮮度確認(AIに依頼)**: "image splitter" のSERPが指示書作成時
