@@ -208,7 +208,25 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
       53項目を保持、書き出し後のPNG・JPEGピースはいずれも[EXIF]グループ0件(GPS含め完全除去)。
       JPEGにはCanvas標準のsRGB ICCプロファイルのみ残るが個人情報は含まない。検証用テスト画像・
       出力ファイルはリポジトリ外(/tmp)で扱い、検証後に削除済み(リポジトリには一切残っていない)
-- [ ] 依頼者: iPhone Safari実機での受け入れ基準(指示書§受け入れ基準6)最終確認
+- [x] 追加機能「Save to Photos」(Web Share API・v1受け入れ済み後の小規模追加。完了条件1〜4)
+  - 条件1(iPhone Safari実機): 未検証・依頼者範囲。実装側はcanShareFiles()の機能判定・
+        一括共有成功パス・複数ファイル拒否時の個別共有フォールバック・AbortError(共有シート
+        キャンセル)処理を`navigator.share`/`canShare`モックで単体確認済み
+  - 条件2(改定後: 能力判定による表示が仕様。既存DL導線の不変+エラー0件が要件): このMacの
+        実Chrome(headless)で`navigator.canShare({files})`実測 → `true`(macOS Chromeは
+        Web Share API Level 2のファイル共有に対応済み)。ボタンは仕様通り表示される。
+        Web Share API非搭載環境(このセッションのBrowser pane用Chromium等)では非表示を確認。
+        個別DL・ZIP一括DLは変更前と同一結果(バイト数一致)・console エラー0件を確認
+  - 条件3(EXIF非含有・v1基準4と同手順): 差し戻しを受けて再実施。GPS付きEXIF埋め込み
+        テスト画像(iPhone撮影・依頼者提供、v1と同一ファイル)を再度お預かりし、`navigator.share`
+        をモックして実際に生成されるFileオブジェクトを捕捉、バイト列をディスクへ書き出して
+        exiftoolで検証。PNG・JPEGとも[EXIF]グループ0件(元ファイルは53件)、GPS/Make/Model/
+        Software/Lens/XMP/IPTCすべて非含有を実ファイルで確認(コード同一性による論理的推測では
+        なく、v1と同一のexiftool実測)。検証用ファイルは/tmpで完結し検証後削除済み
+  - 条件4(非対応環境でのフォールバック): API未搭載環境でconsoleエラー0件・ボタンは`hidden`
+        属性で完全非表示・個別DL/ZIP一括DLは無改変で動作を確認
+- [ ] 依頼者: iPhone Safari実機での受け入れ基準(指示書§受け入れ基準6、Save to Photosボタン含む)
+      最終確認
 - [ ] 統合作業(ホームカード・sitemap・既存3ツールとの相互リンク)の別途発注
 - [ ] **発射直前の5分SERP鮮度確認(AIに依頼)**: "image splitter" のSERPが指示書作成時
       (2026-07-14/15)から変質していないか、公開直前に確認する。変質していれば経営会議で見直し
