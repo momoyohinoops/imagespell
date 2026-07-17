@@ -191,6 +191,70 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - [x] Day 3 投稿: 2026-07-14(blur-face 出荷)
       URL: https://x.com/imagespell/status/2076878924404179059?s=20
 
+### image-splitter(実装完了・未公開。公開タイミングは依頼者判断)
+- [x] 実装(Grid/Carousel 2モード・即プレビュー・Instagram 3列プリセット・
+      個別DL+zip一括DL・PNG/JPEG選択。depth-map-generatorのzip資産をコピーで流用)
+- [x] 受け入れ基準3(無劣化)を機械検証: 非均等グリッド(4×7=28分割)を全ピース再構成して
+      元画像とバイト完全一致・PNG round-trip(encode→decode)もバイト完全一致を確認
+      (getImageDataでの直接比較。テストコード上は実行のみ、リポジトリに残置なし)
+- [x] 受け入れ基準5(非送信)をDevTools Networkタブで確認。20MP合成画像でも外部通信なし
+- [x] 20MP級(5000×4000)画像で3×3即プレビュー0.7秒・10×10グリッド(100ピース)フルzip書き出しも
+      完走してフリーズなしを確認(進捗表示付き)
+- [x] モバイル対応(font-size 16px以上・label+input file・touch-action確認は実機で要再確認)
+- [x] Lighthouse Performance 94点(ローカルサーバー・headless Chrome実測)
+- [x] OGP画像(1200×630・イラストのみ・実写/人物なし)生成
+- [x] 受け入れ基準4(EXIF非含有)をGPS付きEXIF埋め込みテスト画像(iPhone撮影・依頼者提供)で
+      実ファイル検証。exiftoolで比較: 元ファイルはGPS/Make/Model/Software/Lens等[EXIF]グループ
+      53項目を保持、書き出し後のPNG・JPEGピースはいずれも[EXIF]グループ0件(GPS含め完全除去)。
+      JPEGにはCanvas標準のsRGB ICCプロファイルのみ残るが個人情報は含まない。検証用テスト画像・
+      出力ファイルはリポジトリ外(/tmp)で扱い、検証後に削除済み(リポジトリには一切残っていない)
+- [x] 追加機能「Save to Photos」(Web Share API・v1受け入れ済み後の小規模追加。完了条件1〜4)
+  - 条件1(iPhone Safari実機): **依頼者による実機テストで確認済み**。複数ピースを一括で
+        「Save to Photos」→共有シート→写真アプリへの保存に成功(2026-07-17)
+  - 条件2(改定後: 能力判定による表示が仕様。既存DL導線の不変+エラー0件が要件): このMacの
+        実Chrome(headless)で`navigator.canShare({files})`実測 → `true`(macOS Chromeは
+        Web Share API Level 2のファイル共有に対応済み)。ボタンは仕様通り表示される。
+        Web Share API非搭載環境(このセッションのBrowser pane用Chromium等)では非表示を確認。
+        個別DL・ZIP一括DLは変更前と同一結果(バイト数一致)・console エラー0件を確認
+  - 条件3(EXIF非含有・v1基準4と同手順): 差し戻しを受けて再実施。GPS付きEXIF埋め込み
+        テスト画像(iPhone撮影・依頼者提供、v1と同一ファイル)を再度お預かりし、`navigator.share`
+        をモックして実際に生成されるFileオブジェクトを捕捉、バイト列をディスクへ書き出して
+        exiftoolで検証。PNG・JPEGとも[EXIF]グループ0件(元ファイルは53件)、GPS/Make/Model/
+        Software/Lens/XMP/IPTCすべて非含有を実ファイルで確認(コード同一性による論理的推測では
+        なく、v1と同一のexiftool実測)。検証用ファイルは/tmpで完結し検証後削除済み
+  - 条件4(非対応環境でのフォールバック): API未搭載環境でconsoleエラー0件・ボタンは`hidden`
+        属性で完全非表示・個別DL/ZIP一括DLは無改変で動作を確認
+- [x] **重大バグ修正**(依頼者のMac実Chromeでの実機テストで発見): Save to Photos追加時に
+      `sharePiecesBtn`への参照をElement refsセクションより前(Constants内)に置いてしまい、
+      TDZ違反(`ReferenceError: Cannot access 'sharePiecesBtn' before initialization`)で
+      モジュール評価が即クラッシュ。結果、ファイル選択・ドラッグ&ドロップ・ペーストを含む
+      **全ての操作リスナーが一切登録されない**状態になっていた(現象: 「ドラッグ&ドロップが
+      効かない」「browse filesでファイル指定しても画面に表示されない」と一致)。
+      Element refs宣言後に検出ブロックを移動して修正・実イベントで全経路の回帰確認済み
+      (fix commit: `07eea45`)。**教訓**: この不具合は前回の条件2/4検証時にはconsoleエラー
+      0件と報告していたが、それはBrowser paneがHTMLページ自体を積極キャッシュしており、
+      古い(バグ導入前の)app.jsを検証していたため気づけなかった。以後、JS変更後の検証では
+      ページURLにも毎回使い捨てクエリを付けてキャッシュを確実に回避する
+- [x] **バグ修正**(依頼者のMac実Chromeで発見): 「Save to Photos」ボタンは表示されるが押すと
+      失敗する現象。原因はmacOS Chrome特有の癖で、`canShare()`は複数ファイル共有を「対応可」と
+      答えるのに実際の`share()`実行時に失敗することがある。旧コードは`canShare()`が事前拒否
+      した場合しか個別共有にフォールバックしておらず、実行時失敗は救えていなかった。一括共有が
+      実行時に失敗した場合も1枚ずつの共有に自動フォールバックするよう修正(fix commit:
+      `b7517db`)。依頼者のMac Chromeで再テストし、正常動作を確認済み(2026-07-17)
+- [x] 依頼者: iPhone Safari実機での受け入れ基準(指示書§受け入れ基準6、Save to Photosボタン含む)
+      最終確認 — 完了(2026-07-17)。個別ピースのダウンロードはファイルアプリ行きのまま
+      (仕様。個別ボタンは既存v1のダウンロード方式を維持し、Web Share API化は「Save to Photos」
+      の一括ボタンのみに絞った。ご要望があれば個別ボタンも共有方式へ変更可能)
+- [x] 統合作業(ホームカード・sitemap・既存3ツールとの相互リンク) — 完了(2026-07-18)。
+      ホーム`.tool-grid`にカード追加+JSON-LD `hasPart`追加、`sitemap.xml`に`<url>`追加
+      (末尾スラッシュ)、既存3ツールのフッターに`/image-splitter/`を追加(image-splitter側は
+      3ツールへのリンクを実装時から保持済み)。3コミットに分割(feat(site): 3件)
+- [x] **発射直前の5分SERP鮮度確認(AIに依頼)**: 依頼者実施済み(2026-07-18)。結果:
+      「一致ドメイン型後発が9位 = このSERPでは刃の先取りは未完了」。公開可否は依頼者判断
+- [ ] 公開日・30日判定基準の記入(公開後)
+- [ ] GSCでsitemap再送信(公開後)
+- [ ] Day N 投稿(公開後)
+
 ## 作業ログ
 簡潔な1行ログ(履歴が追える程度)。新しいものを上に追加。
 - 2026-07-14: blur-face 公開、GSC sitemap再送信、Day 3投稿。

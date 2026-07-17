@@ -1,0 +1,99 @@
+/* Image Splitter — tool-specific styles (loaded after the shared design
+   system in /css/styles.css). Piece-grid preview + slider controls that
+   don't already have a shared rule. */
+
+.range-input {
+  flex: 1;
+  min-width: 160px;
+  accent-color: var(--brand);
+}
+
+/* Piece preview grid: aspect-ratio mirrors the source image so equal `1fr`
+   tracks approximate the (near-equal, integer-rounded) real piece sizes. */
+.piece-grid {
+  display: grid;
+  gap: 4px;
+  background: var(--line);
+  border-radius: 10px;
+  padding: 4px;
+  /* Cap both dimensions: 560px wide normally, but for tall/portrait sources
+     shrink by height (78vh) instead so the preview never forces a wall of
+     scrolling. */
+  width: min(560px, calc(78vh * var(--ar, 1)));
+  max-width: 100%;
+  margin: 0 auto;
+  aspect-ratio: var(--ar, 1);
+}
+.piece-grid.is-grid {
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+}
+.piece-grid.is-carousel {
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: 1fr;
+  gap: 2px;
+}
+
+.piece {
+  position: relative;
+  overflow: hidden;
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+.piece-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.piece-label {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(17, 24, 39, 0.65);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.piece-dl {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  /* Faint by default rather than fully invisible: hover-capability detection
+     is unreliable on some touch/hybrid hardware, and this button must stay
+     discoverable either way. Hover/focus brings it to full visibility. */
+  opacity: 0.55;
+  transition: opacity 0.12s;
+}
+.piece:hover .piece-dl,
+.piece:focus-within .piece-dl {
+  opacity: 1;
+}
+
+.piece-count {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 8px;
+}
+
+@media (max-width: 560px) {
+  .piece-grid {
+    max-width: 100%;
+  }
+}

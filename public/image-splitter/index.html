@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Split Images into Grids & Carousels — Free, In-Browser | ImageSpell</title>
+    <meta
+      name="description"
+      content="Split a photo into an Instagram grid or carousel, free and instantly — no upload, no sign-up, no quality loss. Pick rows × columns or equal slices, download every piece as one ZIP."
+    />
+    <link rel="canonical" href="https://imagespell.com/image-splitter/" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Image Splitter — Grids & Carousels, Free & In-Browser" />
+    <meta
+      property="og:description"
+      content="Drop a photo and split it into a grid or carousel instantly, right in your browser. No upload, no quality loss, no sign-up."
+    />
+    <meta property="og:url" content="https://imagespell.com/image-splitter/" />
+    <meta property="og:image" content="https://imagespell.com/image-splitter/assets/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- FAQ structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does splitting an image reduce its quality?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Each piece is cropped directly from the original pixels with no resizing or recompression, so a PNG export is pixel-for-pixel identical to the matching region of the source photo. JPEG export uses a high quality setting if you choose that format instead."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my photo uploaded to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Splitting happens entirely in your browser using Canvas — your photo never leaves your device. You can confirm this yourself in your browser's DevTools Network tab."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this tool free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, completely free with no sign-up, no watermark, and no limit on how many images you can split."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How many pieces can I split an image into?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Grid mode supports up to 10 columns and 10 rows (100 pieces). Carousel mode supports 2 to 10 equal vertical slices."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What image formats are supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Load PNG, JPEG, or WebP images, and export the split pieces as PNG or JPEG at the original resolution, individually or bundled into one ZIP."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Analytics (cookie-less). Uncomment ONE and set the ID in js/config.js docs. -->
+    <!-- Cloudflare Web Analytics:
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "REPLACE_WITH_CF_TOKEN"}'></script> -->
+    <!-- Plausible:
+    <script defer data-domain="REPLACE_WITH_PLAUSIBLE_DOMAIN"
+      src="https://plausible.io/js/script.js"></script> -->
+
+    <link rel="stylesheet" href="/css/styles.css?v=2" />
+    <link rel="stylesheet" href="/image-splitter/styles.css?v=1" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span data-site-name>ImageSpell</span>
+        </a>
+        <span class="privacy-pill">🔒 Your image never leaves your device</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- ================= TOOL ================= -->
+      <section class="hero wrap">
+        <h1>Split an image into a grid or carousel</h1>
+        <p class="sub">
+          Drop a photo and it's split instantly into a 3×3 grid — no clicks
+          needed. Switch to Carousel for equal panorama slices, dial in your
+          own rows and columns, or tap the Instagram preset. Every piece
+          exports at full resolution, no upload, no quality loss.
+        </p>
+
+        <div id="tool" class="tool">
+          <!-- Empty state / input -->
+          <label id="dropzone" class="dropzone"
+                 aria-label="Add an image: tap to browse, drag and drop, or paste">
+            <div class="dz-inner">
+              <div class="dz-icon" aria-hidden="true">🧩</div>
+              <p class="dz-title">Drop a photo here</p>
+              <p class="dz-or">
+                or <span class="dz-link">browse files</span> · paste with
+                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>V</kbd>
+              </p>
+              <p class="dz-note">Split into a grid automatically · PNG · JPEG · WebP</p>
+            </div>
+            <input id="fileInput" type="file" accept="image/*" class="visually-hidden" />
+          </label>
+
+          <!-- Piece preview -->
+          <div id="stage" class="stage" hidden>
+            <div id="pieceGrid" class="piece-grid is-grid"></div>
+            <p id="pieceCount" class="piece-count"></p>
+          </div>
+
+          <!-- Controls -->
+          <div id="controls" class="controls" hidden>
+            <div class="control-row modes" role="group" aria-label="Split mode">
+              <button id="modeGrid" class="seg active" aria-pressed="true">
+                Grid
+              </button>
+              <button id="modeCarousel" class="seg" aria-pressed="false">
+                Carousel
+              </button>
+            </div>
+
+            <div id="gridControls">
+              <div class="control-row">
+                <label class="slider-label" for="colsSlider">
+                  Columns <output id="colsValue">3</output>
+                </label>
+                <input id="colsSlider" class="range-input" type="range" min="1" max="10" value="3" />
+              </div>
+              <div class="control-row">
+                <label class="slider-label" for="rowsSlider">
+                  Rows <output id="rowsValue">3</output>
+                </label>
+                <input id="rowsSlider" class="range-input" type="range" min="1" max="10" value="3" />
+              </div>
+              <div class="control-row">
+                <button id="igPresetBtn" class="btn-ghost">
+                  📐 Instagram 3-column preset
+                </button>
+              </div>
+            </div>
+
+            <div id="carouselControls" hidden>
+              <div class="control-row">
+                <label class="slider-label" for="slicesSlider">
+                  Slices <output id="slicesValue">3</output>
+                </label>
+                <input id="slicesSlider" class="range-input" type="range" min="2" max="10" value="3" />
+              </div>
+            </div>
+
+            <div class="control-row download-row">
+              <label class="fmt-label" for="formatSelect">Format</label>
+              <select id="formatSelect">
+                <option value="png">PNG (lossless)</option>
+                <option value="jpeg">JPEG</option>
+              </select>
+              <button id="sharePiecesBtn" class="btn-primary" type="button" hidden>
+                📱 Save to Photos
+              </button>
+              <button id="downloadZipBtn" class="btn-primary">Download ZIP</button>
+              <button id="resetBtn" class="btn-ghost">New image</button>
+            </div>
+          </div>
+
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- ================= LP CONTENT ================= -->
+      <section class="content wrap">
+        <h2>How to split an image</h2>
+        <ol class="steps">
+          <li>
+            <strong>Add your photo.</strong> Drag &amp; drop it onto the tool,
+            click to browse, or paste from your clipboard. It's split into a
+            3×3 grid the instant it loads.
+          </li>
+          <li>
+            <strong>Pick a mode.</strong> Stay in Grid and set your own rows
+            and columns (or tap the Instagram 3-column preset), or switch to
+            Carousel for equal vertical slices.
+          </li>
+          <li>
+            <strong>Check the preview.</strong> Grid mode shows the pieces
+            laid out with gaps, the way they'll actually look once posted.
+          </li>
+          <li>
+            <strong>Download.</strong> Grab individual pieces or everything at
+            once as a ZIP — full original resolution, no watermark.
+          </li>
+        </ol>
+
+        <h2>What people use it for</h2>
+        <ul class="cases">
+          <li>
+            <strong>Instagram grid (puzzle) posts</strong> — split one photo
+            into a 3×N grid that reassembles on your profile.
+          </li>
+          <li>
+            <strong>Carousel / panorama posts</strong> — slice a wide photo
+            into equal panels that swipe together as one image.
+          </li>
+          <li>
+            <strong>TikTok banners</strong> — cut a single graphic into the
+            strips TikTok's profile layout expects.
+          </li>
+          <li>
+            <strong>Tiling large images</strong> — break a big photo or
+            graphic into smaller pieces for printing or sharing.
+          </li>
+        </ul>
+
+        <h2>Frequently asked questions</h2>
+        <div class="faq">
+          <details>
+            <summary>Does splitting an image reduce its quality?</summary>
+            <p>
+              No. Each piece is cropped straight from the original pixels
+              with no resizing or recompression — a PNG export is
+              pixel-for-pixel identical to the matching region of the source
+              photo. JPEG export uses a high quality setting.
+            </p>
+          </details>
+          <details>
+            <summary>Is my photo uploaded to a server?</summary>
+            <p>
+              No. Splitting runs locally in your browser using Canvas. Your
+              photo never leaves your device — you can confirm it yourself in
+              your browser's DevTools Network tab.
+            </p>
+          </details>
+          <details>
+            <summary>Is this tool free?</summary>
+            <p>Yes — completely free, no sign-up, no watermark, and no limits.</p>
+          </details>
+          <details>
+            <summary>How many pieces can I split into?</summary>
+            <p>
+              Grid mode goes up to 10 columns and 10 rows (100 pieces).
+              Carousel mode supports 2 to 10 equal vertical slices.
+            </p>
+          </details>
+          <details>
+            <summary>What image formats are supported?</summary>
+            <p>
+              Load PNG, JPEG, or WebP images, and export the pieces as PNG or
+              JPEG at the original resolution — one at a time or all together
+              in a ZIP.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <nav class="footer-nav">
+          <a href="/">Home</a>
+          <a href="/image-splitter/" aria-current="page">Image Splitter</a>
+          <a href="/blur-face/">Blur Face</a>
+          <a href="/pixelate-image/">Pixelate Image</a>
+          <a href="/depth-map-generator/">Depth Map Generator</a>
+        </nav>
+        <p>
+          <span data-site-name>ImageSpell</span> · Runs entirely in your browser.
+          Your images are never uploaded.
+        </p>
+      </div>
+    </footer>
+
+    <script type="module" src="/image-splitter/js/app.js?v=5"></script>
+  </body>
+</html>
