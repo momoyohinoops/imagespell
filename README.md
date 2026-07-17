@@ -225,6 +225,17 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
         なく、v1と同一のexiftool実測)。検証用ファイルは/tmpで完結し検証後削除済み
   - 条件4(非対応環境でのフォールバック): API未搭載環境でconsoleエラー0件・ボタンは`hidden`
         属性で完全非表示・個別DL/ZIP一括DLは無改変で動作を確認
+- [x] **重大バグ修正**(依頼者のMac実Chromeでの実機テストで発見): Save to Photos追加時に
+      `sharePiecesBtn`への参照をElement refsセクションより前(Constants内)に置いてしまい、
+      TDZ違反(`ReferenceError: Cannot access 'sharePiecesBtn' before initialization`)で
+      モジュール評価が即クラッシュ。結果、ファイル選択・ドラッグ&ドロップ・ペーストを含む
+      **全ての操作リスナーが一切登録されない**状態になっていた(現象: 「ドラッグ&ドロップが
+      効かない」「browse filesでファイル指定しても画面に表示されない」と一致)。
+      Element refs宣言後に検出ブロックを移動して修正・実イベントで全経路の回帰確認済み
+      (fix commit: `07eea45`)。**教訓**: この不具合は前回の条件2/4検証時にはconsoleエラー
+      0件と報告していたが、それはBrowser paneがHTMLページ自体を積極キャッシュしており、
+      古い(バグ導入前の)app.jsを検証していたため気づけなかった。以後、JS変更後の検証では
+      ページURLにも毎回使い捨てクエリを付けてキャッシュを確実に回避する
 - [ ] 依頼者: iPhone Safari実機での受け入れ基準(指示書§受け入れ基準6、Save to Photosボタン含む)
       最終確認
 - [ ] 統合作業(ホームカード・sitemap・既存3ツールとの相互リンク)の別途発注
