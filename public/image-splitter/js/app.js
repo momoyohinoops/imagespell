@@ -19,32 +19,6 @@ const MIME = { png: "image/png", jpeg: "image/jpeg" };
 const EXT = { png: "png", jpeg: "jpg" };
 const JPEG_QUALITY = 0.95;
 
-// --- Web Share API feature detection -----------------------------------------
-// A minimal valid 1x1 transparent PNG, used only to probe whether this browser
-// can share image files at all (support varies: iOS/Android Safari & Chrome
-// generally can, most desktop browsers can't) — never actually shared itself.
-const PROBE_PNG_BYTES = Uint8Array.from(
-  atob(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
-  ),
-  (c) => c.charCodeAt(0)
-);
-function canShareFiles() {
-  if (typeof navigator.share !== "function" || typeof navigator.canShare !== "function") {
-    return false;
-  }
-  try {
-    const probe = new File([PROBE_PNG_BYTES], "probe.png", { type: "image/png" });
-    return navigator.canShare({ files: [probe] });
-  } catch (_) {
-    return false;
-  }
-}
-// Feature is static for the session — decide visibility once at load, no need
-// to re-check per image. Hidden entirely (not just disabled) when unsupported,
-// so unsupported browsers see exactly the v1 download/zip flow, unchanged.
-if (canShareFiles()) sharePiecesBtn.hidden = false;
-
 // --- Element refs ------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
 const dropzone = $("dropzone");
@@ -70,6 +44,32 @@ const downloadZipBtn = $("downloadZipBtn");
 const resetBtn = $("resetBtn");
 const statusEl = $("status");
 const pieceCountEl = $("pieceCount");
+
+// --- Web Share API feature detection -----------------------------------------
+// A minimal valid 1x1 transparent PNG, used only to probe whether this browser
+// can share image files at all (support varies: iOS/Android Safari & Chrome
+// generally can, most desktop browsers can't) — never actually shared itself.
+const PROBE_PNG_BYTES = Uint8Array.from(
+  atob(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+  ),
+  (c) => c.charCodeAt(0)
+);
+function canShareFiles() {
+  if (typeof navigator.share !== "function" || typeof navigator.canShare !== "function") {
+    return false;
+  }
+  try {
+    const probe = new File([PROBE_PNG_BYTES], "probe.png", { type: "image/png" });
+    return navigator.canShare({ files: [probe] });
+  } catch (_) {
+    return false;
+  }
+}
+// Feature is static for the session — decide visibility once at load, no need
+// to re-check per image. Hidden entirely (not just disabled) when unsupported,
+// so unsupported browsers see exactly the v1 download/zip flow, unchanged.
+if (canShareFiles()) sharePiecesBtn.hidden = false;
 
 // --- State -------------------------------------------------------------------
 const state = {
