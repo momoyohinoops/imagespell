@@ -378,6 +378,23 @@ downloadZipBtn.addEventListener("click", async () => {
   track("Download Zip", { mode: state.mode, count: files.length, format: state.format });
 });
 
+// Share pieces one at a time, skipping any file canShare() itself rejects.
+// Returns how many actually went through. A cancelled share sheet (Abort)
+// stops the loop rather than being treated as a per-file failure.
+async function shareOneAtATime(files) {
+  let shared = 0;
+  for (const file of files) {
+    if (!navigator.canShare?.({ files: [file] })) continue;
+    try {
+      await navigator.share({ files: [file] });
+      shared++;
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") break; // user cancelled
+    }
+  }
+  return shared;
+}
+
 // "Save to Photos" — only wired up when canShareFiles() revealed the button.
 // On iOS/Android this hands the OS share sheet real image Files, letting the
 // user save straight to the Photos app (or share into Instagram directly)
@@ -409,21 +426,29 @@ sharePiecesBtn.addEventListener("click", async () => {
 
     if (navigator.canShare?.({ files })) {
       // Whole-batch share: on iOS this is the one-tap "Save N Images" path.
-      await navigator.share({ files });
-      setStatus(`Shared ✓ (${files.length} pieces)`);
-    } else {
-      // Platform can share files but rejected this batch (e.g. a file-count
-      // or size ceiling) — fall back to sharing pieces one at a time.
-      let shared = 0;
-      for (const file of files) {
-        if (!navigator.canShare?.({ files: [file] })) continue;
-        try {
-          await navigator.share({ files: [file] });
-          shared++;
-        } catch (e) {
-          if (e instanceof DOMException && e.name === "AbortError") break; // user cancelled
+      try {
+        await navigator.share({ files });
+        setStatus(`Shared ✓ (${files.length} pieces)`);
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          setStatus(""); // user cancelled — not an error, don't retry
+        } else {
+          // canShare() said yes but share() itself failed — seen on desktop
+          // Chrome/macOS, where multi-file image shares are unreliable even
+          // when canShare() reports support. Degrade to per-file instead of
+          // just giving up.
+          const shared = await shareOneAtATime(files);
+          setStatus(
+            shared
+              ? `Shared ✓ (${shared}/${files.length} pieces)`
+              : "Sharing isn't supported here — try Download ZIP instead."
+          );
         }
       }
+    } else {
+      // Platform can share files but rejected this batch outright (e.g. a
+      // file-count or size ceiling) — fall back to sharing one at a time.
+      const shared = await shareOneAtATime(files);
       setStatus(
         shared
           ? `Shared ✓ (${shared}/${files.length} pieces)`
@@ -432,11 +457,7 @@ sharePiecesBtn.addEventListener("click", async () => {
     }
     track("Share Pieces", { mode: state.mode, count: files.length, format: state.format });
   } catch (e) {
-    if (e instanceof DOMException && e.name === "AbortError") {
-      setStatus(""); // user cancelled the share sheet — not an error
-    } else {
-      setStatus("Sharing failed. Try Download ZIP instead.");
-    }
+    setStatus("Sharing failed. Try Download ZIP instead.");
   } finally {
     sharePiecesBtn.disabled = false;
   }
