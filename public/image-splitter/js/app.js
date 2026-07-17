@@ -105,11 +105,20 @@ async function loadFromBlob(blob, name) {
     setStatus("That doesn't look like an image file.");
     return;
   }
+
   let bitmap;
   try {
-    bitmap = await createImageBitmap(blob);
+    try {
+      bitmap = await createImageBitmap(blob);
+    } catch (e) {
+      bitmap = await loadViaImgElement(blob);
+    }
   } catch (e) {
-    bitmap = await loadViaImgElement(blob);
+    // Both decode paths failed (e.g. a format the browser can't decode at
+    // all, like some HEIC variants) — surface it instead of doing nothing.
+    console.error("image-splitter: failed to decode image", e);
+    setStatus("Couldn't read that image. Try a JPEG, PNG, or WebP file.");
+    return;
   }
 
   const src = document.createElement("canvas");
