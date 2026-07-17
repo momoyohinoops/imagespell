@@ -13,6 +13,7 @@ Cloudflare Pages でホスティング。
 | `/pixelate-image/` | `public/pixelate-image/` | 画像のピクセル化・顔の自動モザイク・情報の墨消し | 無料 |
 | `/depth-map-generator/` | `public/depth-map-generator/` | 画像→深度マップ生成(Depth Anything V2 Small)。Proで16-bit/原寸/バッチ | 無料 + Pro $19 買い切り |
 | `/blur-face/` | `public/blur-face/` | 画像を渡すと自動で顔検出→ぼかし(操作ゼロ)。顔ごとON/OFF・手動範囲追加・Blur/Pixelate切替 | 無料 |
+| `/image-splitter/` | `public/image-splitter/` | 画像をInstagramグリッド/カルーセルに分割。無劣化・個別DL+zip一括DL・Web Share APIで写真アプリへ一括保存 | 無料 |
 
 ## ディレクトリ構成(公開ルート = `public/`)
 ```
@@ -30,6 +31,12 @@ public/                         ← Cloudflare Pages の Build output directory
 ├── blur-face/                   ← 3本目(無料pSEO弾。pixelate-imageのコード資産をコピーで流用)
 │   ├── index.html               ← /blur-face/ で配信
 │   └── js/                      ← app / blur(ぼかし・ピクセル化エンジン) / faces / config / analytics
+├── image-splitter/              ← 4本目(無料pSEO弾。Grid/Carousel分割。zip資産はdepth-map-generator
+│   │                               からコピー流用。Web Share APIで写真アプリへの一括保存に対応)
+│   ├── index.html               ← /image-splitter/ で配信
+│   ├── styles.css               ← image-splitter 専用の補助スタイル(共有CSSの後に読む)
+│   ├── js/                      ← app / splitter(分割エンジン) / export(zip) / config / analytics
+│   └── assets/                  ← og.png(イラストのみ・実写/人物なし)
 ├── _headers / _redirects / robots.txt / sitemap.xml / og-image.png
 outputs/                        ← 配信対象外の生成物(SNS投稿画像など)
 docs/ · README.md · .gitignore  ← リポジトリ管理物(public 外・非配信)
@@ -191,7 +198,22 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - [x] Day 3 投稿: 2026-07-14(blur-face 出荷)
       URL: https://x.com/imagespell/status/2076878924404179059?s=20
 
-### image-splitter(実装完了・未公開。公開タイミングは依頼者判断)
+### image-splitter(公開済み: 2026-07-18 / 30日判定日: 2026-08-17)
+- [x] 実装・受け入れ基準9項目の照合完了(v1: 2026-07-16、うち基準6 iPhone実機は依頼者検証)
+- [x] 追加発注: Save to Photos(Web Share API)完了・完了条件4項目照合済み(2026-07-18)。
+      条件2は「能力判定による表示が仕様(macOS Chrome等では表示される)」に改定の上で承認(依頼者裁定)
+- [x] 実機テストで発見のバグ2件(TDZクラッシュ / macOS Chromeの共有失敗)修正・再検証済み(dcf9c4e)
+- [x] 発射直前SERP鮮度確認(2026-07-18): 変質なし。較正メモ: 一致ドメイン型後発 splitimage.im は
+      9位=このSERPでは刃の先取りは未完了(上位は引き続き古参・寄せ集め中心)
+- [x] 統合作業(ホームカード・sitemap・4ツール相互リンク)完了
+- [x] 公開: https://imagespell.com/image-splitter/(canonical記載URLの200を curl -I で確認済み)
+- 公開日: 2026-07-18 / 30日判定日: **2026-08-17**
+  - 合格基準: GSCインデックス済み かつ(インプレッション100+ or クリック5+)。X経由ノーカウント
+  - 不合格時: 追加投資停止(削除しない。放置=pSEO資産)
+- [ ] GSCでsitemap再送信
+- [ ] Day 4 投稿: (投稿後に日付とURLを記入)
+
+#### image-splitter — 実装ログ(詳細)
 - [x] 実装(Grid/Carousel 2モード・即プレビュー・Instagram 3列プリセット・
       個別DL+zip一括DL・PNG/JPEG選択。depth-map-generatorのzip資産をコピーで流用)
 - [x] 受け入れ基準3(無劣化)を機械検証: 非均等グリッド(4×7=28分割)を全ピース再構成して
@@ -251,9 +273,7 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
       3ツールへのリンクを実装時から保持済み)。3コミットに分割(feat(site): 3件)
 - [x] **発射直前の5分SERP鮮度確認(AIに依頼)**: 依頼者実施済み(2026-07-18)。結果:
       「一致ドメイン型後発が9位 = このSERPでは刃の先取りは未完了」。公開可否は依頼者判断
-- [ ] 公開日・30日判定基準の記入(公開後)
-- [ ] GSCでsitemap再送信(公開後)
-- [ ] Day N 投稿(公開後)
+      (公開日・30日判定・GSC・Day N投稿の記入は上の要約ブロック参照)
 
 ## 作業ログ
 簡潔な1行ログ(履歴が追える程度)。新しいものを上に追加。
