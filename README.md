@@ -26,7 +26,7 @@ public/                         ← Cloudflare Pages の Build output directory
 ├── depth-map-generator/        ← 2本目(pixelate の“隣”。配下ではない)
 │   ├── index.html              ← /depth-map-generator/ で配信
 │   ├── styles.css              ← depth 専用の補助スタイル(共有CSSの後に読む)
-│   ├── js/                     ← 推論・UI・LS統合(main / depth-engine / tiling / png16 / license 等)
+│   ├── js/                     ← 推論・UI・Polar課金統合(main / depth-engine / tiling / png16 / license 等)
 │   └── assets/                 ← og.jpg・LPサンプル画像
 ├── blur-face/                   ← 3本目(無料pSEO弾。pixelate-imageのコード資産をコピーで流用)
 │   ├── index.html               ← /blur-face/ で配信
@@ -104,16 +104,24 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - 推論は **WebGPU=fp16 優先、WASM フォールバック**(初期化時にプローブ推論で自動降格)。
   後処理の品質パラメータは `public/depth-map-generator/js/depth-config.js` に集約(CV研究者はここだけ)。
 
-### Lemon Squeezy(Pro 課金)
-- Store 428235 / Product 1209872 / **Variant 1891543**($19 買い切り)。
-- 公開設定は `public/depth-map-generator/js/lemonsqueezy.config.js`(**公開IDのみ・APIキー非含**)。
+### Polar(Pro 課金 — 2026-07-16 Lemon Squeezy から移行)
+移行理由(1行): LSのKYC停滞と劣化シグナル(サイレント再提出要求等)を受け、承認済みのPolarへ
+メイン移行(経営会議裁定・案C、2026-07-16発注)。実購入者ゼロの時点での移行のため互換性コストなし。
+- Organization: ImageSpell(Individual)。承認済み(2026-07-15確認: Payouts Ready)。
+- 製品: "ImageSpell Pro — Depth Map Generator"、$19 one-time、license keys Unlimited /
+  activation limit 3。
+- 公開設定は `public/depth-map-generator/js/polar.config.js`(**公開値のみ**。Polarの
+  License API は認証不要の公開エンドポイントのため APIキー自体が不要)。
 - **Pro ゲート: `PRO_ENABLED`**(同ファイル)。現在 `false` = 「Pro — coming soon」表示で
   チェックアウトを開かない。ライセンスキー入力欄は常時有効(先行キーで解錠可能)。
-  **KYC 完了後に `true` に切り替える**(1箇所)。
-- APIキーはリポジトリ**ルート**の `.env`(`.gitignore` 済み・`public/` の外なので配信もされない)
-  にのみ置き、Variant ID 取得等の開発作業だけに使う。雛形は `.env.example`(公開値のみ・秘密なし)。
-  ブラウザが叩くのは APIキー不要の公開 License API(activate/validate)のみ。
-  (コミット・フロントエンド混入の禁止ルールは CLAUDE.md 参照)
+  **本番実購入E2E合格後、依頼者の明示指示を受けてから `true` に切り替える**(1箇所・別コミット)。
+- sandbox値(sandbox.polar.sh用)は `public/depth-map-generator/js/polar.config.local.js`
+  (**gitignore対象・コミット禁止**)に分離。存在すれば動的importで本番値を上書き、存在しない
+  本番ビルドでは自動的に本番値のみが使われる(切替方式の詳細はファイル内コメント参照)。
+- License API: 認証不要の公開エンドポイント
+  `/v1/customer-portal/license-keys/{activate,validate,deactivate}`(POST・JSON body)。
+  製品スコープ検証は `benefit_id` の一致で行う(旧LSの `variant_id` 照合を置換)。
+  (変更禁止のルールは CLAUDE.md 参照)
 
 ### モバイル検証(実機必須・レスポンシブモード不可)
 実装ルール(label+input関連付け・16px以上)は CLAUDE.md 参照。以下は **iPhone Safari 実機**
@@ -157,7 +165,7 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
     推測されるが未検証。対応するかはコスト対効果次第(判断は依頼者)
 
 ### depth-map-generator(公開済み: 2026-07-12 / SEO判定日: 2026-08-11)
-- [x] 実装(コア/表示オプション/Pro:16-bit・タイル・バッチ/LS統合/LP/モバイル)
+- [x] 実装(コア/表示オプション/Pro:16-bit・タイル・バッチ/決済統合/LP/モバイル)
 - [x] 技術検証(2048px 中央値 2.4 秒 @ WebGPU fp16・内蔵GPU)
 - [x] 傘サイトへ統合(1ツール1ディレクトリ・相互リンク・sitemap・JSON-LD・OGP)
 - [x] LP サンプル画像 / og.jpg(1200×630 左右分割)/ X用 16:9 を生成
@@ -166,19 +174,31 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 - [x] 公開URL 確認: https://imagespell.com/depth-map-generator/
 - [x] Day 2 投稿: 2026-07-13(depth map generator 出荷 + fp16知見)
       URL: https://x.com/imagespell/status/2076499487099654309?s=20
-- [ ] Lemon Squeezy KYC 完了 → `PRO_ENABLED=true` に切替 → テストモードで
-      購入→キー→解錠の **E2E 確認**
-- [ ] LS 製品ギャラリーの仮アイコンを、実写ベースのビフォー/アフター製品画像へ差し替え
 - [ ] (任意)実 Chrome での WASM フォールバック疎通確認
 - 30日判定(二軸・事後の下方修正禁止):
   1. SEO軸 — 判定日: **2026-08-11**。合格基準: GSCインデックス済み かつオーガニックの
      インプレッションが発生していること。不合格時: 追加投資を停止(削除しない。放置で熟成)
   2. 課金軸 — 判定日: **Pro有効化日 + 30日**(有効化日: ____ / 判定日: ____)。
-     合格基準: 初課金1件。前提: LS KYC完了 → テスト購入E2E → `PRO_ENABLED=true`。
+     合格基準: 初課金1件。前提: Polar本番実購入E2E完了 → `PRO_ENABLED=true`。
      不合格時: 価格・訴求の変更を1回試す($14早割 等)→それでもゼロなら
      Pro機能は維持したまま追加投資停止、次弾へ
   - X経由・直接流入はSEO判定にカウントしない(GSCオーガニックのみ)
-  - KYCトリップワイヤー: 2026-07-24までに審査完了しない場合はPolar移行を検討
+
+#### Polar移行(2026-07-16発注、指示書v1.2 `polar移行_指示書_v1_2_20260716.md`)
+実装済み(コード側): `polar.config.js`/`polar.config.local.js` 分離・`checkout.js` リンク遷移化・
+`license.js` 全面書き換え(JSON body・`organization_id`・`activation_id`・`benefit_id` スコープ)・
+localStorage v1→v2・LS痕跡除去(`lemonsqueezy.config.js` 削除・LS SDK参照ゼロ)・
+キャッシュバスティング更新(`main.js?v=5`)。sandbox APIとの実疎通は activate/validate とも
+確認済み(不正キーで実際に404/422応答を受信、応答内容に応じたエラーメッセージ分岐も実動作)。
+sandbox実UIでのテスト購入は、Stripe決済iframeへの自動入力がこのセッションのブラウザ自動化
+ツールでは実現できず(3パターン試行)未達成。指示書の時間箱条項どおり縮退し、Polar実レスポンス
+形式に忠実なモックで activate成功 / validate成功 / benefit_id不一致 / 404 / 403(上限到達) /
+revoked / disabled / オフラインの全分岐と、UIへの反映(Pro解錠・16-bit/タイル/バッチの
+全Proボタン活性化・リロード後の実API呼び出しでの安全な降格)を検証済み。
+- [ ] **依頼者タスク**: 本番実購入E2E($19実購入→メールでキー受領→解錠→リロード後も維持→refund)
+- [ ] **依頼者タスク**: iPhone Safari実機でキー入力欄がズームしないこと・貼付→解錠まで動作すること
+- [ ] E2E合格 → `PRO_ENABLED=true` の実施指示 → 有効化日を上の課金軸に記入 → 判定日を記入
+- [ ] LS退役処理: ダッシュボード毎日チェック終了(残高ゼロのまま放置。アカウント閉鎖は不急)
 
 ### blur-face(公開済み: 2026-07-14 / 30日判定日: 2026-08-13)
 - [x] 実装(コア体験・顔ごとON/OFF・手動矩形追加・Blur/Pixelate切替・強度スライダー・全解像度書き出し)
@@ -278,6 +298,11 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
 
 ## 作業ログ
 簡潔な1行ログ(履歴が追える程度)。新しいものを上に追加。
+- 2026-07-20: depth-map-generatorの決済をLemon SqueezyからPolarへ移行(指示書v1.2発注)。
+  polar.config.js/local分離・checkout.jsリンク遷移化・license.js全面書き換え・localStorage v1→v2・
+  LS痕跡除去。sandbox APIとの実疎通確認、UI/エラー分岐は全網羅モックで検証(sandbox実UI購入は
+  Stripe iframeの自動化制約で未達、指示書の時間箱条項により縮退)。PRO_ENABLEDはfalseのまま、
+  本番実購入E2E・iPhone実機確認は依頼者タスクとして残置。
 - 2026-07-18: image-splitter(4本目・無料pSEO弾)公開、統合作業(ホーム/sitemap/相互リンク)、
   GSC sitemap再送信、Day 4投稿。追加発注のSave to Photos(Web Share API)実装、実機テストで
   発見したバグ2件(TDZクラッシュ・macOS Chromeの共有失敗)を修正・再検証。
