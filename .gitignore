@@ -14,3 +14,7 @@ dist/
 .env
 .env.local
 .env.*.local
+
+# Polar sandbox config overrides (depth-map-generator). Local/dev only —
+# production values live in the committed polar.config.js. See CLAUDE.md.
+public/depth-map-generator/js/polar.config.local.js

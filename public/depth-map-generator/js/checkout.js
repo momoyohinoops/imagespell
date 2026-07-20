@@ -1,40 +1,24 @@
-// checkout.js — open the Lemon Squeezy hosted checkout as an overlay (LS.js).
-import { LEMONSQUEEZY } from "./lemonsqueezy.config.js";
+// checkout.js — send the buyer to the Polar hosted checkout.
+//
+// Polar's checkout is a plain link (unlike Lemon Squeezy's in-page overlay
+// SDK), so this is just a same-tab navigation — no SDK to load, no overlay
+// event to listen for. Works uniformly for both checkout URL shapes Polar
+// uses: the short `https://buy.polar.sh/<id>` production form, and the
+// `https://sandbox-api.polar.sh/v1/checkout-links/<id>/redirect` API-redirect
+// form used in sandbox — both are just URLs a browser GET/redirect-follows.
+//
+// Success is detected after the browser lands back on this page with
+// `?purchase=success` (configured on the Polar checkout link's confirmation
+// URL) — see isPurchaseSuccessReturn()/clearPurchaseMarker() in license.js.
+import { getPolarConfig } from "./polar.config.js";
 
-let _loaded = null;
-
-function loadLemonJS() {
-  if (_loaded) return _loaded;
-  _loaded = new Promise((resolve, reject) => {
-    if (window.LemonSqueezy) return resolve();
-    const s = document.createElement("script");
-    s.src = "https://assets.lemonsqueezy.com/lemon.js";
-    s.defer = true;
-    s.onload = () => {
-      try { window.createLemonSqueezy?.(); } catch {}
-      resolve();
-    };
-    s.onerror = () => reject(new Error("Failed to load Lemon Squeezy checkout"));
-    document.head.appendChild(s);
-  });
-  return _loaded;
-}
-
-// Open the overlay. onSuccess() fires when LS reports a completed checkout
-// (in addition to the post-purchase redirect to ?purchase=success).
+// `onSuccess` is accepted for call-site compatibility with the previous
+// (Lemon Squeezy overlay) contract, but it will NOT fire here: navigating to
+// Polar's checkout leaves this page entirely, so there is no in-page success
+// event. The actual "welcome back, paste your key" moment is handled by the
+// ?purchase=success return-URL check in main.js's boot(), independent of
+// this function.
 export async function openCheckout({ onSuccess } = {}) {
-  await loadLemonJS();
-  if (window.LemonSqueezy?.Setup) {
-    window.LemonSqueezy.Setup({
-      eventHandler: (event) => {
-        if (event?.event === "Checkout.Success") onSuccess?.(event);
-      },
-    });
-  }
-  const url = LEMONSQUEEZY.checkoutUrl + (LEMONSQUEEZY.checkoutUrl.includes("?") ? "&" : "?") + "embed=1";
-  if (window.LemonSqueezy?.Url?.Open) {
-    window.LemonSqueezy.Url.Open(url);
-  } else {
-    window.open(url, "_blank", "noopener"); // graceful fallback
-  }
+  const cfg = await getPolarConfig();
+  window.location.href = cfg.checkoutUrl;
 }

@@ -1,9 +1,14 @@
-// license.js — Lemon Squeezy License API (public, no API key needed from the
-// browser). Handles activate / validate, localStorage persistence, and graceful
-// offline degradation (never freeze the app on a failed check).
-import { LEMONSQUEEZY } from "./lemonsqueezy.config.js";
+// license.js — Polar Customer Portal License Key API (public, unauthenticated
+// — no API key needed from the browser; Polar's docs explicitly state these
+// endpoints are safe to call from an untrusted public client). Handles
+// activate / validate, localStorage persistence, and graceful offline
+// degradation (never freeze the app on a failed check).
+import { getPolarConfig } from "./polar.config.js";
 
-const LS_KEY = "imagespell.dmg.license.v1";
+// v2: replaces the Lemon Squeezy-shaped v1 schema (instanceId/variantId).
+// No migration from v1 — the migration order confirmed zero real purchasers
+// existed under LS, so old records are simply abandoned/ignored.
+const LS_KEY = "imagespell.dmg.license.v2";
 
 function loadStored() {
   try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch { return null; }
@@ -16,57 +21,55 @@ export function clearLicense() {
 }
 export function getStoredLicense() { return loadStored(); }
 
-// Stable-ish per-browser instance name so repeat activations reuse a slot
-// (activation limit = 3). Persisted alongside the license.
-function instanceName() {
+// Stable-ish per-browser label so repeat activations reuse the same Polar
+// "activation" slot (activation limit = 3). Persisted alongside the license.
+// (Generic concept, not Polar-specific — kept the same storage key/shape
+// across the LS -> Polar migration.)
+function instanceLabel() {
   let id = localStorage.getItem("imagespell.dmg.instance");
   if (!id) { id = "imagespell-dmg-" + Math.random().toString(36).slice(2, 10); localStorage.setItem("imagespell.dmg.instance", id); }
   return id;
 }
 
-async function postForm(url, params) {
-  const body = new URLSearchParams(params);
+async function postJson(url, body) {
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded" },
-    body,
+    headers: { "Accept": "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, data };
 }
 
-// Activate a license key. Returns { pro, message, instanceId }.
+// Activate a license key. Returns { pro, message }.
 export async function activateLicense(rawKey) {
   const key = (rawKey || "").trim();
   if (!key) return { pro: false, message: "Please enter your license key." };
+  const cfg = await getPolarConfig();
   try {
-    const { ok, data } = await postForm(LEMONSQUEEZY.licenseApi.activate, {
-      license_key: key, instance_name: instanceName(),
+    const { ok, status, data } = await postJson(cfg.apiBase + cfg.licenseApi.activate, {
+      key,
+      organization_id: cfg.organizationId,
+      label: instanceLabel(),
     });
-    // LS returns { activated:true, instance:{id}, license_key:{status}, meta:{...} }
-    if (ok && data.activated && data.instance?.id) {
-      const record = {
-        key,
-        instanceId: data.instance.id,
-        status: data.license_key?.status || "active",
-        lastValidated: Date.now(),
-        variantId: String(data.meta?.variant_id ?? ""),
-      };
-      // Guard: only unlock for OUR product variant.
-      if (record.variantId && record.variantId !== LEMONSQUEEZY.variantId) {
+    if (ok && data.id && data.license_key) {
+      // Product scoping: replaces the old LS variant_id compare. A license
+      // key belongs to a specific benefit; reject anything not ours (e.g. a
+      // key copy-pasted from a different Polar product/organization).
+      const benefitId = data.license_key.benefit_id;
+      if (benefitId && benefitId !== cfg.benefitId) {
         return { pro: false, message: "This key is for a different product." };
       }
-      saveStored(record);
-      return { pro: true, message: "Pro unlocked. Thank you!", instanceId: record.instanceId };
+      saveStored({
+        key,
+        activationId: data.id,
+        benefitId: benefitId || cfg.benefitId,
+        status: data.license_key.status || "granted",
+        lastValidated: Date.now(),
+      });
+      return { pro: true, message: "Pro unlocked. Thank you!" };
     }
-    // Already activated on this instance, or limit reached, etc.
-    const err = data.error || data.license_key?.status || "activation failed";
-    if (/already/i.test(String(err))) {
-      // Fall back to validate to confirm it's usable.
-      const v = await validateLicense(key);
-      if (v.pro) return v;
-    }
-    return { pro: false, message: humanizeError(err) };
+    return { pro: false, message: humanizeError(status, data) };
   } catch (e) {
     return { pro: false, offline: true, message: "Couldn't reach the license server (offline?)." };
   }
@@ -77,18 +80,21 @@ export async function validateLicense(rawKey) {
   const stored = loadStored();
   const key = (rawKey || stored?.key || "").trim();
   if (!key) return { pro: false, message: "No license registered." };
+  const cfg = await getPolarConfig();
   try {
-    const params = { license_key: key };
-    if (stored?.instanceId) params.instance_id = stored.instanceId;
-    const { ok, data } = await postForm(LEMONSQUEEZY.licenseApi.validate, params);
-    const status = data.license_key?.status;
-    const valid = ok && data.valid && (status === "active");
+    const params = { key, organization_id: cfg.organizationId, benefit_id: cfg.benefitId };
+    if (stored?.activationId) params.activation_id = stored.activationId;
+    const { ok, status, data } = await postJson(cfg.apiBase + cfg.licenseApi.validate, params);
+    const valid = ok && data.status === "granted" && (!data.benefit_id || data.benefit_id === cfg.benefitId);
     if (valid) {
-      if (stored) saveStored({ ...stored, status, lastValidated: Date.now() });
+      if (stored) saveStored({ ...stored, status: data.status, lastValidated: Date.now() });
       return { pro: true, message: "License valid." };
     }
-    // Definitive failure (expired/disabled/invalid) → downgrade to free.
-    return { pro: false, message: humanizeError(status || data.error || "invalid license") };
+    if (ok && data.benefit_id && data.benefit_id !== cfg.benefitId) {
+      return { pro: false, message: "This key is for a different product." };
+    }
+    // Definitive failure (revoked/disabled/not found) → downgrade to free.
+    return { pro: false, message: humanizeError(status, data, ok ? data.status : null) };
   } catch (e) {
     // Network error: degrade to free for this session, but KEEP the key so a
     // later online check can re-enable Pro. Never freeze the app.
@@ -96,16 +102,20 @@ export async function validateLicense(rawKey) {
   }
 }
 
-function humanizeError(code) {
-  const s = String(code).toLowerCase();
-  if (s.includes("expired")) return "This license has expired.";
-  if (s.includes("disabled")) return "This license has been disabled.";
-  if (s.includes("limit")) return "Activation limit reached (3 devices).";
-  if (s.includes("not found") || s.includes("invalid")) return "Key not found. Please check what you entered.";
+// status: Polar's `granted|revoked|disabled` when the HTTP call succeeded but
+// the key itself isn't usable; httpStatus/data cover HTTP-level failures
+// (404 not found, 403 activation limit reached, 422 malformed request).
+function humanizeError(httpStatus, data, status) {
+  if (status === "revoked") return "This license has been revoked.";
+  if (status === "disabled") return "This license has been disabled.";
+  if (httpStatus === 403) return "Activation limit reached (3 devices).";
+  if (httpStatus === 404) return "Key not found. Please check what you entered.";
+  if (httpStatus === 422) return "That doesn't look like a valid license key.";
   return "Couldn't verify your license.";
 }
 
-// True if URL carries the LS post-purchase marker.
+// True if URL carries the Polar post-purchase marker (configured on the
+// Polar checkout link's confirmation/success URL — see polar.config.js).
 export function isPurchaseSuccessReturn() {
   return new URLSearchParams(location.search).get("purchase") === "success";
 }

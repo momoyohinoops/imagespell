@@ -6,11 +6,11 @@ import { exportPNG8, exportPNG16, triggerDownload, makeZip } from "./export.js";
 import { COLORMAP_KEYS } from "./colormaps.js";
 import { POSTPROCESS, HIRES, RUNTIME } from "./depth-config.js";
 import {
-  activateLicense, validateLicense, getStoredLicense, clearLicense,
+  activateLicense, validateLicense, getStoredLicense,
   isPurchaseSuccessReturn, clearPurchaseMarker,
 } from "./license.js";
 import { openCheckout } from "./checkout.js";
-import { PRO_ENABLED } from "./lemonsqueezy.config.js";
+import { PRO_ENABLED } from "./polar.config.js";
 
 const $ = (id) => document.getElementById(id);
 const state = {
