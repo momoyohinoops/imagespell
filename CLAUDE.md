@@ -16,7 +16,8 @@
 - public/depth-map-generator/js/depth-config.js の値の変更(品質チューニング済み)
 - 深度モデルの変更。Depth Anything V2 **Small** 固定
   (Base/Large は CC-BY-NC 非商用ライセンスのため使用禁止)
-- Lemon Squeezy の設定値・License API ロジック・?purchase=success 処理の変更
+- Polar の設定値・License API ロジック・?purchase=success 処理の変更
+  (2026-07-16 Lemon Squeezy から移行。旧LSの同種No-goを置換)
 - .env の内容変更・コミット(.gitignore 対象であることを常に維持)
 - APIキー・シークレットをフロントエンドコード・コミット・ログに含めること
 - 公開中のOG画像・LPテキストの変更(明示的な指示がある場合のみ可)
