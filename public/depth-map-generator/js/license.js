@@ -5,7 +5,7 @@
 // degradation (never freeze the app on a failed check).
 import { getPolarConfig } from "./polar.config.js";
 
-// v2: replaces the Lemon Squeezy-shaped v1 schema (instanceId/variantId).
+// v2: replaces the previous provider's v1 schema (instanceId/variantId).
 // No migration from v1 — the migration order confirmed zero real purchasers
 // existed under LS, so old records are simply abandoned/ignored.
 const LS_KEY = "imagespell.dmg.license.v2";

@@ -48,7 +48,7 @@ let _resolved = null;
 // Resolves the active Polar config: PRODUCTION values, overridden by
 // public/depth-map-generator/js/polar.config.local.js if that file is
 // present. That file is gitignored and exists only in local dev checkouts
-// (holds Polar SANDBOX values for testing) — it is never deployed, so a
+// (holds non-production override values for local testing) — it is never deployed, so a
 // dynamic import of it 404s harmlessly in production and we fall back to
 // PRODUCTION. Result is cached after first resolution.
 export async function getPolarConfig() {
