@@ -102,13 +102,21 @@ export async function validateLicense(rawKey) {
   }
 }
 
-// status: Polar's `granted|revoked|disabled` when the HTTP call succeeded but
-// the key itself isn't usable; httpStatus/data cover HTTP-level failures
-// (404 not found, 403 activation limit reached, 422 malformed request).
+// Error classification, calibrated against REAL Polar responses (captured
+// 2026-07-21 against the live API — do not "simplify" back to status codes):
+//   activate, limit reached → 403 {detail:"License key activation limit already reached"}
+//   activate, revoked key   → 403 {detail:"License key is no longer active. …"}
+//   validate, revoked key   → 404 {detail:"License key is no longer active."}
+//   any, unknown key        → 404 {detail:"Not found"}
+// So an HTTP status alone is ambiguous (403 = limit OR revoked; 404 = typo OR
+// revoked) — the `detail` text is the only reliable discriminator. `status`
+// covers the 200-with-status-field shape as a defensive extra.
 function humanizeError(httpStatus, data, status) {
-  if (status === "revoked") return "This license has been revoked.";
+  const detail = String(data?.detail || "").toLowerCase();
+  if (status === "revoked" || detail.includes("no longer active")) return "This license has been revoked.";
   if (status === "disabled") return "This license has been disabled.";
-  if (httpStatus === 403) return "Activation limit reached (3 devices).";
+  if (httpStatus === 403 && detail.includes("activation limit")) return "Activation limit reached (3 devices).";
+  if (httpStatus === 403) return "This license can't be activated.";
   if (httpStatus === 404) return "Key not found. Please check what you entered.";
   if (httpStatus === 422) return "That doesn't look like a valid license key.";
   return "Couldn't verify your license.";
