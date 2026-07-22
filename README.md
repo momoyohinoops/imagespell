@@ -112,9 +112,9 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
   activation limit 3。
 - 公開設定は `public/depth-map-generator/js/polar.config.js`(**公開値のみ**。Polarの
   License API は認証不要の公開エンドポイントのため APIキー自体が不要)。
-- **Pro ゲート: `PRO_ENABLED`**(同ファイル)。現在 `false` = 「Pro — coming soon」表示で
-  チェックアウトを開かない。ライセンスキー入力欄は常時有効(先行キーで解錠可能)。
-  **本番実購入E2E合格後、依頼者の明示指示を受けてから `true` に切り替える**(1箇所・別コミット)。
+- **Pro ゲート: `PRO_ENABLED`**(同ファイル)。**2026-07-22 に `true` へ切替済み**(本番実購入
+  E2E・iPhone実機とも合格後、依頼者の明示指示により実施。詳細は下のチェックリスト参照)。
+  「Pro — coming soon」表示に戻す場合は同ファイルを `false` に(1箇所・別コミット)。
 - sandbox値(sandbox.polar.sh用)は `public/depth-map-generator/js/polar.config.local.js`
   (**gitignore対象・コミット禁止**)に分離。存在すれば動的importで本番値を上書き、存在しない
   本番ビルドでは自動的に本番値のみが使われる(切替方式の詳細はファイル内コメント参照)。
@@ -138,8 +138,9 @@ CSS/JS は**コンテンツハッシュを付けていない**ため、変更が
    両ツール(pixelate / depth)で同一方式)
 2. **iOS 自動ズーム**: ライセンスキー入力・カラーマップ select は 16px 以上に設定済み。
    フォーカスして**ズームしない**ことを確認する。
-3. **タッチ挙動**: 「Pro — coming soon」ボタンは無効(タップしても何も起きない)。
-   キー入力は「already have a key?」リンクから開く(ズームせず案内が出る)。
+3. **タッチ挙動**: `PRO_ENABLED=true`(現状)なら「Upgrade to Pro」タップでPolarチェックアウトへ
+   遷移すること。`false`(coming soon運用に戻した場合)ならボタンは無効(タップしても何も起きない)。
+   どちらの状態でも「already have a key?」リンクからキー入力欄が開く(ズームせず案内が出る)。
 
 ## 公開前・公開後チェックリスト
 
