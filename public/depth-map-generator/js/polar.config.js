@@ -18,9 +18,11 @@
 //   • the "Upgrade to Pro" button shows "Pro — coming soon" and does NOT open
 //     checkout;
 //   • the license-key input stays available (so an early key can still unlock).
-// Flip to `true` in a dedicated commit, only after the requester explicitly
-// instructs it post-E2E. One place to edit.
-export const PRO_ENABLED = false;
+// Flipped to `true` 2026-07-22 on the requester's explicit instruction, after
+// production real-purchase E2E (checkout -> email key -> activate -> reload
+// persistence -> refund+revoke -> correct downgrade) and iPhone Safari
+// device checks both passed. See README's Polar移行 ledger for the record.
+export const PRO_ENABLED = true;
 
 // Production values (this file is committed and shipped as-is).
 const PRODUCTION = Object.freeze({
